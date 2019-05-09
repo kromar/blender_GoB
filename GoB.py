@@ -499,7 +499,8 @@ class GoB_OT_export(bpy.types.Operator):
         triangulate_faces = [f for f in bm.faces if len(f.edges) > 4]
         result = bmesh.ops.triangulate(bm, faces=triangulate_faces)
         #join traingles only that are result of ngon triangulation
-        bmesh.ops.join_triangles(bm, faces=result['faces'], cmp_seam=False, cmp_sharp=False, cmp_uvs=False, cmp_vcols=False, cmp_materials=False, angle_face_threshold=3.1, angle_shape_threshold=3.1)
+        bmesh.ops.join_triangles(bm, faces=result['faces'], cmp_seam=False, cmp_sharp=False, cmp_uvs=False, cmp_vcols=False,
+                                 cmp_materials=False, angle_face_threshold=3.1, angle_shape_threshold=3.1)
         export_mesh = bpy.data.meshes.new(name=f'{obj.name}_goz')  # mesh is deleted in main loop anyway
         bm.to_mesh(export_mesh)
         bm.free()
@@ -705,12 +706,15 @@ class GoB_OT_export(bpy.types.Operator):
             disp = 0
             nm = 0
             GoBmat = False
+            #obj.material_slots[0].material
             for matslot in obj.material_slots:
+                print("matslot: ", matslot)
                 if matslot.material:
-                    GoBmat = matslot
+                    mat = matslot.material
                     break
+            # TODO: replace this with the node input
             # if GoBmat:
-            #     for texslot in GoBmat.material.texture_slots:
+            #     for texslot in GoBmat.material.texture_slots: #TODO: instead of texture slot take the node inputs
             #         if texslot:
             #             if texslot.texture:
             #                 if texslot.texture.type == 'IMAGE' and texslot.texture_coords == 'UV' and texslot.texture.image:
@@ -720,7 +724,44 @@ class GoB_OT_export(bpy.types.Operator):
             #                         disp = texslot
             #                     if texslot.use_map_normal:
             #                         nm = texslot
+
+            if mat:
+                print("gobmat: ", mat)
+
+                nodes = mat.node_tree.nodes
+
+                output_node = nodes.get('Material Output')
+                linked_node = output_node.inputs[0].links[0].from_node
+                texture_node = linked_node.inputs
+                for i in texture_node:
+                    print("i: ", i)
+                print("texture node: ", texture_node)
+
+
+                #"Base Color"
+                #"Color"
+                #"Normal"
+            #
+            # def create_node_material(mat):
+            #     # enable nodes
+            #     mat.use_nodes = True
+            #     nodes = mat.node_tree.nodes
+            #     output_node = nodes.get('Principled BSDF')
+            #     vcol_node = nodes.get('ShaderNodeAttribute')
+            #
+            #     # create new node
+            #     if not vcol_node:
+            #         vcol_node = nodes.new('ShaderNodeAttribute')
+            #         vcol_node.location = -300, 200
+            #         vcol_node.attribute_name = 'Col'  # TODO: replace with vertex color group name
+            #
+            #         # link nodes
+            #         mat.node_tree.links.new(output_node.inputs[0], vcol_node.outputs[0])
+            #
+
+
             formatRender = scn.render.image_settings.file_format
+            print('fileformat: ', formatRender)
             scn.render.image_settings.file_format = 'BMP'
             if diff:
                 name = diff.texture.image.filepath.replace('\\', '/')
