@@ -701,70 +701,53 @@ class GoB_OT_export(bpy.types.Operator):
                         goz_file.write(pack('<H', grName))
                 else:
                     goz_file.write(pack('<H', 0))
+
             # Diff, disp and nm maps
-            diff = 0
-            disp = 0
-            nm = 0
+            diff_map = False
+            normal_map = False
+            disp_map = False
             GoBmat = False
-            #obj.material_slots[0].material
+
+            # obj.material_slots[0].material
             for matslot in obj.material_slots:
                 print("matslot: ", matslot)
                 if matslot.material:
-                    mat = matslot.material
+                    GoBmat = matslot.material
                     break
-            # TODO: replace this with the node input
-            # if GoBmat:
-            #     for texslot in GoBmat.material.texture_slots: #TODO: instead of texture slot take the node inputs
-            #         if texslot:
-            #             if texslot.texture:
-            #                 if texslot.texture.type == 'IMAGE' and texslot.texture_coords == 'UV' and texslot.texture.image:
-            #                     if texslot.use_map_color_diffuse:
-            #                         diff = texslot
-            #                     if texslot.use_map_displacement:
-            #                         disp = texslot
-            #                     if texslot.use_map_normal:
-            #                         nm = texslot
 
-            if mat:
-                print("gobmat: ", mat)
-
-                nodes = mat.node_tree.nodes
+            # get the textures from material nodes
+            if GoBmat:
+                print("gobmat: ", GoBmat)
+                nodes = GoBmat.node_tree.nodes
 
                 output_node = nodes.get('Material Output')
-                linked_node = output_node.inputs[0].links[0].from_node
-                texture_node = linked_node.inputs
-                for i in texture_node:
-                    print("i: ", i)
-                print("texture node: ", texture_node)
+                mat_surface_input = output_node.inputs[0].links[0].from_node
+                mat_disp_input = output_node.inputs[2].links[0].from_node
 
+                # displacement
+                for node_input in mat_disp_input.inputs:
+                    if node_input.name == 'Height' and node_input.links:
+                        disp_map = node_input.links[0].from_node
+                        print("disp_map: ", disp_map)
 
-                #"Base Color"
-                #"Color"
-                #"Normal"
-            #
-            # def create_node_material(mat):
-            #     # enable nodes
-            #     mat.use_nodes = True
-            #     nodes = mat.node_tree.nodes
-            #     output_node = nodes.get('Principled BSDF')
-            #     vcol_node = nodes.get('ShaderNodeAttribute')
-            #
-            #     # create new node
-            #     if not vcol_node:
-            #         vcol_node = nodes.new('ShaderNodeAttribute')
-            #         vcol_node.location = -300, 200
-            #         vcol_node.attribute_name = 'Col'  # TODO: replace with vertex color group name
-            #
-            #         # link nodes
-            #         mat.node_tree.links.new(output_node.inputs[0], vcol_node.outputs[0])
-            #
+                # diffuse and normal
+                for node_input in mat_surface_input.inputs:
+                    if (node_input.name == 'Base Color' or node_input.name == 'Color') and node_input.links:
+                        diff_map = node_input.links[0].from_node
+                        print("diff map: ", diff_map)
 
+                    elif node_input.name == 'Normal':
+                        normal_node = node_input.links[0].from_node
+                        for i in normal_node.inputs:
+                            if i.name == 'Color' and i.links:
+                                normal_map = i.links[0].from_node
+                                print("normal_map: ", i.links[0].from_node)
 
             formatRender = scn.render.image_settings.file_format
-            print('fileformat: ', formatRender)
             scn.render.image_settings.file_format = 'BMP'
-            if diff:
-                name = diff.texture.image.filepath.replace('\\', '/')
+
+            if diff_map:
+                name = diff_map.image.filepath.replace('\\', '/')
                 name = name.rsplit('/')[-1]
                 name = name.rsplit('.')[0]
                 if len(name) > 5:
@@ -772,31 +755,17 @@ class GoB_OT_export(bpy.types.Operator):
                         name = path + '/GoZProjects/Default/' + name + '.bmp'
                     else:
                         name = path + '/GoZProjects/Default/' + name + '_TXTR.bmp'
-                diff.texture.image.save_render(name)
+                diff_map.image.save_render(name)
                 print(name)
                 name = name.encode('utf8')
                 goz_file.write(pack('<4B', 0xc9, 0xaf, 0x00, 0x00))
                 goz_file.write(pack('<I', len(name)+16))
                 goz_file.write(pack('<Q', 1))
                 goz_file.write(pack('%ss' % len(name), name))
-            if disp:
-                name = disp.texture.image.filepath.replace('\\', '/')
-                name = name.rsplit('/')[-1]
-                name = name.rsplit('.')[0]
-                if len(name) > 3:
-                    if name[-3:] == "_DM":
-                        name = path + '/GoZProjects/Default/' + name + '.bmp'
-                    else:
-                        name = path + '/GoZProjects/Default/' + name + '_DM.bmp'
-                disp.texture.image.save_render(name)
-                print(name)
-                name = name.encode('utf8')
-                goz_file.write(pack('<4B', 0xd9, 0xd6, 0x00, 0x00))
-                goz_file.write(pack('<I', len(name)+16))
-                goz_file.write(pack('<Q', 1))
-                goz_file.write(pack('%ss' % len(name), name))
-            if nm:
-                name = nm.texture.image.filepath.replace('\\', '/')
+
+
+            if normal_map:
+                name = normal_map.image.filepath.replace('\\', '/')
                 name = name.rsplit('/')[-1]
                 name = name.rsplit('.')[0]
                 if len(name) > 3:
@@ -804,10 +773,27 @@ class GoB_OT_export(bpy.types.Operator):
                         name = path + '/GoZProjects/Default/' + name + '.bmp'
                     else:
                         name = path + '/GoZProjects/Default/' + name + '_NM.bmp'
-                nm.texture.image.save_render(name)
+                normal_map.image.save_render(name)
                 print(name)
                 name = name.encode('utf8')
                 goz_file.write(pack('<4B', 0x51, 0xc3, 0x00, 0x00))
+                goz_file.write(pack('<I', len(name) + 16))
+                goz_file.write(pack('<Q', 1))
+                goz_file.write(pack('%ss' % len(name), name))
+
+            if disp_map:
+                name = disp_map.image.filepath.replace('\\', '/')
+                name = name.rsplit('/')[-1]
+                name = name.rsplit('.')[0]
+                if len(name) > 3:
+                    if name[-3:] == "_DM":
+                        name = path + '/GoZProjects/Default/' + name + '.bmp'
+                    else:
+                        name = path + '/GoZProjects/Default/' + name + '_DM.bmp'
+                disp_map.image.save_render(name)
+                print(name)
+                name = name.encode('utf8')
+                goz_file.write(pack('<4B', 0xd9, 0xd6, 0x00, 0x00))
                 goz_file.write(pack('<I', len(name)+16))
                 goz_file.write(pack('<Q', 1))
                 goz_file.write(pack('%ss' % len(name), name))
