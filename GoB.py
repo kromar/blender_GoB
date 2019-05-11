@@ -139,9 +139,7 @@ class GoB_OT_import(bpy.types.Operator):
             me.from_pydata(vertsData, [], facesData)  # Assume mesh data in ready to write to mesh..
             del vertsData
             del facesData
-            # TODO: when sending from zbrush the model is upside down,
-            ## when sending first from blender to zbrush and then back then the orietation is fine...
-            ## why does this happen? can i reproduce it?
+
             if pref.flip_y: #fixes bad mesh orientation for some people
                 me.transform(mathutils.Matrix([
                     (-1., 0., 0., 0.),
@@ -302,44 +300,60 @@ class GoB_OT_import(bpy.types.Operator):
                 tag = goz_file.read(4)
         bpy.context.view_layer.objects.active = obj #make active last obj
 
+
+
+
         #TODO: create material nodes
+        if diff_map:
+            #enable nodes
+            objMat.use_nodes = True
+            nodes = objMat.node_tree.nodes
+            for n in nodes:
+                print("nodes: ", n)
+            output_node = nodes.get('Principled BSDF')
+            print("output_node: ", output_node)
+            # TODO: trace color node to input of output node
+            txtdiff_node = nodes.get('ShaderNodeTexImage')
 
-        # enable nodes
-        # mat.use_nodes = True
-        # nodes = mat.node_tree.nodes
-        # output_node = nodes.get('Principled BSDF')
-        # vcol_node = nodes.get('ShaderNodeAttribute')
-        #
-        # # create new node
-        # if not vcol_node:
-        #     vcol_node = nodes.new('ShaderNodeAttribute')
-        #     vcol_node.location = -300, 200
-        #     vcol_node.attribute_name = 'Col'  # TODO: replace with vertex color group name
-        #
-        #     # link nodes
-        #     mat.node_tree.links.new(output_node.inputs[0], vcol_node.outputs[0])
+            # # create new node
+            if not txtdiff_node:
+                txtdiff_node = nodes.new('ShaderNodeTexImage')
+                txtdiff_node.location = -300, 300
+                txtdiff_node.image = txtDiff.image
+                # link nodes
+                objMat.node_tree.links.new(output_node.inputs[0], txtdiff_node.outputs[0])
+            else:
+                print("texture found", txtdiff_node)
 
 
-        # if diff:
-        #     mtex = objMat.texture_slots.add()
-        #     mtex.texture = txtDiff
-        #     mtex.texture_coords = 'UV'
-        #     mtex.use_map_color_diffuse = True
-        # if disp:
-        #     mtex = objMat.texture_slots.add()
-        #     mtex.texture = txtDisp
-        #     mtex.texture_coords = 'UV'
-        #     mtex.use_map_color_diffuse = False
-        #     mtex.use_map_displacement = True
-        # if nmp:
-        #     mtex = objMat.texture_slots.add()
-        #     mtex.texture = txtNmp
-        #     mtex.texture_coords = 'UV'
-        #     mtex.use_map_normal = True
-        #     mtex.use_map_color_diffuse = False
-        #     mtex.normal_factor = 1.
-        #     mtex.normal_map_space = 'TANGENT'
-        # me.materials.append(objMat)
+
+        if normal_map:
+            #enable nodes
+            objMat.use_nodes = True
+            nodes = objMat.node_tree.nodes
+            output_node = nodes.get('Principled BSDF')
+            #txtnm_node = nodes.get('Image Texture')
+            nmap_node = nodes.get('Norman Map')
+
+            # # create new node
+            if not nmap_node:
+                nmap_node = nodes.new('ShaderNodeNormalMap')
+                nmap_node.location = -300, -150
+                # link nodes
+                objMat.node_tree.links.new(output_node.inputs[17], nmap_node.outputs[0])
+
+                txtnm_node = nodes.new('ShaderNodeTexImage')
+                txtnm_node.location = -600, -150
+                txtnm_node.image = txtNmp.image
+                # link nodes
+                objMat.node_tree.links.new(nmap_node.inputs[1], txtnm_node.outputs[0])
+
+                for i in nmap_node.inputs:
+                    print("nmap_node.inputs", i)
+
+
+
+        #me.materials.append(objMat)
         return
 
     def execute(self, context):
