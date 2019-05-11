@@ -139,7 +139,10 @@ class GoB_OT_import(bpy.types.Operator):
             me.from_pydata(vertsData, [], facesData)  # Assume mesh data in ready to write to mesh..
             del vertsData
             del facesData
-            if pref.flip_y:  # fixes bad mesh orientation for some people
+            # TODO: when sending from zbrush the model is upside down,
+            ## when sending first from blender to zbrush and then back then the orietation is fine...
+            ## why does this happen? can i reproduce it?
+            if pref.flip_y: #fixes bad mesh orientation for some people
                 me.transform(mathutils.Matrix([
                     (-1., 0., 0., 0.),
                     (0., 0., 1., 0.),
@@ -163,7 +166,7 @@ class GoB_OT_import(bpy.types.Operator):
                 bpy.data.meshes.remove(oldMesh)
                 obj.data.transform(obj.matrix_world.inverted()) #assume we have to rever transformation from obj mode
                 obj.select_set(True)
-                                
+
                 if len(obj.material_slots) > 0:
                     if obj.material_slots[0].material is not None:
                         objMat = obj.material_slots[0].material
@@ -619,7 +622,7 @@ class GoB_OT_export(bpy.types.Operator):
                     break
 
             # get the textures from material nodes
-            if GoBmat:
+            if GoBmat.node_tree:
                 nodes = GoBmat.node_tree.nodes
 
                 output_node = nodes.get('Material Output')
