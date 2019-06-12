@@ -20,13 +20,14 @@
 if "bpy" in locals():
     import importlib
     importlib.reload(GoB)
-    importlib.reload(preferences)
 else:
     from . import GoB
-    from . import preferences
+
+
 
 import bpy
 import os
+from . import addon_updater_ops
 import bpy.utils.previews
 
 
@@ -34,24 +35,28 @@ bl_info = {
     "name": "GoB",
     "description": "An unofficial GOZ-like addon for Blender",
     "author": "ODe, JoseConseco, kromar",
-    "version": (3, 2, 0),
+    "version": (3, 0, 4),
     "blender": (2, 80, 0),
     "location": "In the info header",
     "wiki_url": "http://wiki.blender.org/index.php/Extensions:"
                 "2.6/Py/Scripts/Import-Export/GoB_ZBrush_import_export",
-    "tracker_url": "https://github.com/JoseConseco/GoB/issues/new",
+    "tracker_url": "http://www.zbrushcentral.com/showthread.php?"
+                "127419-GoB-an-unofficial-GoZ-for-Blender",
     "category": "Import-Export"}
 
 
 classes = (
     GoB.GoB_OT_import,
     GoB.GoB_OT_export,
-    preferences.GoBPreferences
+    GoB.GoBPreferences,
     )
 
 
 def register():
+    addon_updater_ops.register(bl_info)
+
     for c in classes:
+        addon_updater_ops.make_annotations(c)  # to avoid blender 2.8 warnings
         bpy.utils.register_class(c)
 
     global icons
@@ -62,18 +67,22 @@ def register():
     icons.load("GOZ_SYNC_DISABLED", os.path.join(icons_dir, "goz_sync_disabled.png"), 'IMAGE')
     GoB.preview_collections["main"] = icons
 
-    bpy.types.TOPBAR_HT_upper_bar.append(GoB.draw_goz_buttons)
+    bpy.types.TOPBAR_HT_upper_bar.append(GoB.draw_goz)
 
 
 def unregister():
+    # addon updater unregister
+    addon_updater_ops.unregister()
 
-    for preferences.custom_icons in GoB.preview_collections.values():
+    for GoB.custom_icons in GoB.preview_collections.values():
         bpy.utils.previews.remove(icons)
     GoB.preview_collections.clear()
 
-    bpy.types.TOPBAR_HT_upper_bar.remove(GoB.draw_goz_buttons)
+    bpy.types.TOPBAR_HT_upper_bar.remove(GoB.draw_goz)
 
     [bpy.utils.unregister_class(c) for c in classes]
-
+    
     if bpy.app.timers.is_registered(GoB.run_import_periodically):
         bpy.app.timers.unregister(GoB.run_import_periodically)
+
+
