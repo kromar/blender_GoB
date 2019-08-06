@@ -360,10 +360,24 @@ class GoB_OT_import(bpy.types.Operator):
         bpy.context.view_layer.objects.active = obj
 
         if pref.materialinput == 'TEXTURES':
-            #create_node_textures(objMat, txtDiff, txtNmp, txtDisp)
-            #testnode = NodeBuilder.TestNodes("hans")
-            newnode = NodeBuilder.BuildNodes(self, material=objMat)
-            newnode.create_output_node()
+
+            #construct material node tree
+            mat_node = NodeBuilder.BuildNodes(self, material=objMat)
+            #create base nodes
+            mat_node.create_output_node()
+            mat_node.create_shader_node()
+            #create base color
+            mat_node.create_textureimage_node(texture_image=txtDiff)
+            #create normal map
+            mat_node.create_normal_node()
+            mat_node.create_textureimage_node(texture_image=txtNmp, pos_y=-300)
+            #create displacement map
+            mat_node.create_displacement_node()
+            mat_node.create_textureimage_node(texture_image=txtDisp, pos_y=-600)
+
+            #mat_nodes.connect_nodes()
+
+            mat_node.align_nodes()
             pass
         #me.materials.append(objMat)
         return
