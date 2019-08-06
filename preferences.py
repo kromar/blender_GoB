@@ -81,7 +81,7 @@ class GoBPreferences(AddonPreferences):
     materialinput: bpy.props.EnumProperty(
             name="Create material",
             description="choose source for material import",
-            items=[#('TEXTURES', 'from Textures', 'Create mateial inputs from textures'),
+            items=[('TEXTURES', 'from Textures', 'Create mateial inputs from textures'),
                    ('POLYPAINT', 'from Polypaint', 'Create material inputs from polypaint'),
                    ('IGNORE', 'Ignore', 'No additional material inputs are created'),
                    ],
