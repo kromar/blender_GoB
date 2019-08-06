@@ -20,14 +20,19 @@
 if "bpy" in locals():
     import importlib
     importlib.reload(GoB)
+    importlib.reload(preferences)
+    importlib.reload(addon_updater_ops)
+    importlib.reload(NodeBuilder)
 else:
     from . import GoB
+    from . import preferences
+    from . import addon_updater_ops
+    from . import NodeBuilder
 
 
 
 import bpy
 import os
-from . import addon_updater_ops
 import bpy.utils.previews
 
 
@@ -35,20 +40,20 @@ bl_info = {
     "name": "GoB",
     "description": "An unofficial GOZ-like addon for Blender",
     "author": "ODe, JoseConseco, kromar",
-    "version": (3, 0, 4),
+    "version": (3, 1, 0),
     "blender": (2, 80, 0),
     "location": "In the info header",
     "wiki_url": "http://wiki.blender.org/index.php/Extensions:"
                 "2.6/Py/Scripts/Import-Export/GoB_ZBrush_import_export",
-    "tracker_url": "http://www.zbrushcentral.com/showthread.php?"
-                "127419-GoB-an-unofficial-GoZ-for-Blender",
+    "tracker_url": "https://github.com/JoseConseco/GoB/issues/new",
     "category": "Import-Export"}
 
 
 classes = (
     GoB.GoB_OT_import,
     GoB.GoB_OT_export,
-    GoB.GoBPreferences,
+    preferences.GoBPreferences,
+    NodeBuilder.BuildNodes
     )
 
 
@@ -67,18 +72,18 @@ def register():
     icons.load("GOZ_SYNC_DISABLED", os.path.join(icons_dir, "goz_sync_disabled.png"), 'IMAGE')
     GoB.preview_collections["main"] = icons
 
-    bpy.types.TOPBAR_HT_upper_bar.append(GoB.draw_goz)
+    bpy.types.TOPBAR_HT_upper_bar.append(GoB.draw_goz_buttons)
 
 
 def unregister():
     # addon updater unregister
     addon_updater_ops.unregister()
 
-    for GoB.custom_icons in GoB.preview_collections.values():
+    for preferences.custom_icons in GoB.preview_collections.values():
         bpy.utils.previews.remove(icons)
     GoB.preview_collections.clear()
 
-    bpy.types.TOPBAR_HT_upper_bar.remove(GoB.draw_goz)
+    bpy.types.TOPBAR_HT_upper_bar.remove(GoB.draw_goz_buttons)
 
     [bpy.utils.unregister_class(c) for c in classes]
     

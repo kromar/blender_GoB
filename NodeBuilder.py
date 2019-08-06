@@ -20,7 +20,7 @@ The material can contain a diffuse texture a normal map and a displacement map.
 
     - test integrity of node tree
 """
-
+import bpy
 
 class CreateNodeMaterial():
     pass
@@ -48,9 +48,10 @@ class TestNodes():
         #   mat.use_nodes = True
 
 
-
-
-class NodeBuilder():
+class BuildNodes(bpy.types.Operator):
+    bl_idname = "scene.nodebuilder"
+    bl_label = "build nodes"
+    bl_description = "buidling node trees"
     def __init__(self, node_name=None, material=None, node_pos_x=0, node_pos_y=0, node_width = 400,
                  node_input=None, node_output=None, texture_image=None):
 
@@ -68,7 +69,9 @@ class NodeBuilder():
         self.textureimage_node = None
         self.mynode = None
         self.output_node = None
+        print("self.material:", self.material)
         self.nodes = self.material.node_tree.nodes
+
 
 
     def create_output_node(self):
@@ -118,6 +121,8 @@ class NodeBuilder():
         self.material.node_tree.links.new(self.displacement_node.inputs[0], self.txtDisp_node.outputs[0])
         """
 
+    def align_nodes(self):
+        pass
 
 
 
