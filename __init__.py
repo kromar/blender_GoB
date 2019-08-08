@@ -72,7 +72,7 @@ def register():
     icons.load("GOZ_SYNC_DISABLED", os.path.join(icons_dir, "goz_sync_disabled.png"), 'IMAGE')
     GoB.preview_collections["main"] = icons
 
-    bpy.types.TOPBAR_HT_upper_bar.append(GoB.draw_goz_buttons)
+    bpy.types.TOPBAR_HT_upper_bar.prepend(GoB.draw_goz_buttons)
 
 
 def unregister():

@@ -47,7 +47,7 @@ def draw_goz_buttons(self, context):
     global run_background_update, icons
     icons = preview_collections["main"]
     pref = bpy.context.preferences.addons[__package__.split(".")[0]].preferences
-    if context.region.alignment != 'RIGHT':
+    if context.region.alignment == 'RIGHT':
         layout = self.layout
         row = layout.row(align=True)
 
@@ -366,19 +366,18 @@ class GoB_OT_import(bpy.types.Operator):
             #create base nodes
             mat_node.create_output_node()
             mat_node.create_shader_node()
-            #create base color
+            # #create base color
             mat_node.create_textureimage_node(texture_image=txtDiff)
             #create normal map
             mat_node.create_normal_node()
             mat_node.create_textureimage_node(texture_image=txtNmp, pos_y=-300)
-            #create displacement map
+            # #create displacement map
             mat_node.create_displacement_node()
             mat_node.create_textureimage_node(texture_image=txtDisp, pos_y=-600)
 
             #mat_nodes.connect_nodes()
+            #mat_node.align_nodes()
 
-            mat_node.align_nodes()
-            pass
         #me.materials.append(objMat)
         return
 
@@ -903,31 +902,31 @@ class GoB_OT_export(bpy.types.Operator):
 
             #get the textures from material nodes
             #TODO: currently only full node export is supported, cover partial node setup (diff, nm, dm)
-            if GoBmat.node_tree:
-                nodes = GoBmat.node_tree.nodes
-
-                output_node = nodes.get('Material Output')
-                mat_surface_input = output_node.inputs[0].links[0].from_node
-                mat_disp_input = output_node.inputs[2].links[0].from_node
-
-                # displacement
-                for node_input in mat_disp_input.inputs:
-                    if node_input.name == 'Height' and node_input.links:
-                        disp_map = node_input.links[0].from_node
-                        #print("disp_map: ", disp_map)
-
-                # diffuse and normal
-                for node_input in mat_surface_input.inputs:
-                    if (node_input.name == 'Base Color' or node_input.name == 'Color') and node_input.links:
-                        diff_map = node_input.links[0].from_node
-                        #print("diff map: ", diff_map)
-
-                    elif node_input.name == 'Normal':
-                        normal_node = node_input.links[0].from_node
-                        for i in normal_node.inputs:
-                            if i.name == 'Color' and i.links:
-                                normal_map = i.links[0].from_node
-                                #print("normal_map: ", i.links[0].from_node)
+            # if GoBmat.node_tree:
+            #     nodes = GoBmat.node_tree.nodes
+            #
+            #     output_node = nodes.get('Material Output')
+            #     mat_surface_input = output_node.inputs[0].links[0].from_node
+            #     mat_disp_input = output_node.inputs[2].links[0].from_node
+            #
+            #     # displacement
+            #     for node_input in mat_disp_input.inputs:
+            #         if node_input.name == 'Height' and node_input.links:
+            #             disp_map = node_input.links[0].from_node
+            #             #print("disp_map: ", disp_map)
+            #
+            #     # diffuse and normal
+            #     for node_input in mat_surface_input.inputs:
+            #         if (node_input.name == 'Base Color' or node_input.name == 'Color') and node_input.links:
+            #             diff_map = node_input.links[0].from_node
+            #             #print("diff map: ", diff_map)
+            #
+            #         elif node_input.name == 'Normal':
+            #             normal_node = node_input.links[0].from_node
+            #             for i in normal_node.inputs:
+            #                 if i.name == 'Color' and i.links:
+            #                     normal_map = i.links[0].from_node
+            #                     #print("normal_map: ", i.links[0].from_node)
 
 
 
