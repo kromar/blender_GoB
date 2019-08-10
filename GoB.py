@@ -416,6 +416,7 @@ def createTexture(texturename, imgname):
         print("texture already exists!", tail)
         img = bpy.data.images[tail]
         texture = bpy.data.textures[imgname]
+        img.reload()
 
     texture.image = img
     return texture
