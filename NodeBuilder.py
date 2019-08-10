@@ -175,7 +175,22 @@ class BuildNodes(bpy.types.Operator):
     def align_nodes(self):
         pass
 
+        # output_node = nodes.get('Material Output')
+        # shader_node = nodes.get('Principled BSDF')
 
+        # TODO: trace color node to input of output node
+        #txtdiff_node = nodes.get('ShaderNodeTexImage')
+        # for node_input in output_node.inputs:
+        #     print("node inputs: ", input)
+        #     if (node_input.name == 'Base Color' or node_input.name == 'Color') and node_input.links:
+        #         pass
+        #     if node_input.name == 'Normal' and node_input.links:
+        #         pass
+        #     if node_input.name == 'Color' and node_input.links:
+        #         pass
+        #
+        #     if node_input.name == 'Height' and node_input.links:
+        #         pass
 
 
 
