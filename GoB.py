@@ -315,21 +315,9 @@ class GoB_OT_import(bpy.types.Operator):
                     print("diff tag")
                     cnt = unpack('<I', goz_file.read(4))[0] - 16
                     goz_file.seek(8, 1)
-
                     diffName = unpack('%ss' % cnt, goz_file.read(cnt))[0]
-
-                    head, tail = ntpath.split(diffName.decode('utf-8'))
-                    if not tail in bpy.data.images:
-                        img = bpy.data.images.load(diffName.strip().decode('utf-8'))
-                        txtDiff = bpy.data.textures.new("GoB_diffuse", 'IMAGE')
-                        print("creating new texture: ", tail)
-                    else:
-                        print("texture already exists!", tail)
-                        img = bpy.data.images[tail]
-                        txtDiff = bpy.data.textures['GoB_diffuse']
-
+                    txtDiff = createTexture(diffName, 'GoB_diffuse')
                     diff_map = True
-                    txtDiff.image = img
                     # me.uv_textures[0].data[0].image = img
 
                 # Disp map
@@ -338,11 +326,8 @@ class GoB_OT_import(bpy.types.Operator):
                     cnt = unpack('<I', goz_file.read(4))[0] - 16
                     goz_file.seek(8, 1)
                     dispName = unpack('%ss' % cnt, goz_file.read(cnt))[0]
-                    print("disp name: ", dispName.decode('utf-8'))
-                    img = bpy.data.images.load(dispName.strip().decode('utf-8'))
+                    txtDisp = createTexture(dispName, 'GoB_displacement')
                     disp_map = True
-                    txtDisp = bpy.data.textures.new("GoB_displacement", 'IMAGE')
-                    txtDisp.image = img
 
                 # Normal map
                 elif tag == b'\x51\xc3\x00\x00':
@@ -350,13 +335,8 @@ class GoB_OT_import(bpy.types.Operator):
                     cnt = unpack('<I', goz_file.read(4))[0] - 16
                     goz_file.seek(8, 1)
                     nmpName = unpack('%ss' % cnt, goz_file.read(cnt))[0]
-                    print("norm name: ", nmpName.decode('utf-8'))
-                    img = bpy.data.images.load(nmpName.strip().decode('utf-8'))
+                    txtNmp = createTexture(nmpName, 'GoB_normal')
                     normal_map = True
-                    txtNmp = bpy.data.textures.new("GoB_normal", 'IMAGE')
-                    txtNmp.image = img
-                    txtNmp.use_normal_map = True
-
                 else:
                     print("unknown tag:{0}\ntry to skip it...".format(tag))
                     if utag >= 10:
@@ -425,6 +405,20 @@ class GoB_OT_import(bpy.types.Operator):
             run_background_update = True
         return{'FINISHED'}
 
+
+def createTexture(texturename, imgname):
+    head, tail = ntpath.split(texturename.decode('utf-8'))
+    if not tail in bpy.data.images:
+        img = bpy.data.images.load(texturename.strip().decode('utf-8'))
+        texture = bpy.data.textures.new(imgname, 'IMAGE')
+        print("creating new texture: ", tail)
+    else:
+        print("texture already exists!", tail)
+        img = bpy.data.images[tail]
+        texture = bpy.data.textures[imgname]
+
+    texture.image = img
+    return texture
 
 # currently not used
 def collect_export_nodes():
