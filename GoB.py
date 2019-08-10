@@ -357,13 +357,13 @@ class GoB_OT_import(bpy.types.Operator):
             mat_node.create_output_node()
             mat_node.create_shader_node()
             # #create base color
-            mat_node.create_textureimage_node(texture_image=txtDiff)
+            mat_node.create_textureimage_node(texture_image=txtDiff, node_label='GoB_diffuse')
             #create normal map
             mat_node.create_normal_node()
-            mat_node.create_textureimage_node(texture_image=txtNmp, pos_y=-300)
+            mat_node.create_textureimage_node(texture_image=txtNmp, node_label='GoB_normal', pos_y=-300)
             # #create displacement map
             mat_node.create_displacement_node()
-            mat_node.create_textureimage_node(texture_image=txtDisp, pos_y=-600)
+            mat_node.create_textureimage_node(texture_image=txtDisp, node_label='GoB_displacement', pos_y=-600)
 
             #mat_nodes.connect_nodes()
             #mat_node.align_nodes()

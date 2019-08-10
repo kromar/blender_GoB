@@ -54,11 +54,11 @@ class BuildNodes(bpy.types.Operator):
     bl_idname = "scene.nodebuilder"
     bl_label = "build nodes"
     bl_description = "buidling node trees"
-    def __init__(self, node_name=None, material=None, pos_x=0, pos_y=0, node_width=400,
+    def __init__(self, node_label='', material=None, pos_x=0, pos_y=0, node_width=400,
                  node_input=None, node_output=None, texture_image=None):
 
-        self.node_name = node_name
         self.material = material
+        self.node_label = node_label
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.node_width = node_width
@@ -68,7 +68,7 @@ class BuildNodes(bpy.types.Operator):
 
         self.normal_node = None
         self.displacement_node = None
-        self.textureimage_node = None
+        self.texture_node = None
         self.shader_node = None
         self.output_node = None
         print("self.material:", self.material)
@@ -115,21 +115,24 @@ class BuildNodes(bpy.types.Operator):
             self.shader_node.location = self.pos_x, self.pos_y
             #self.nodetree.links.new(self.output_node.inputs[0], self.shader_node.outputs[0])
 
-    def create_textureimage_node(self, texture_image=None, pos_x=-1200, pos_y=0):
+    def create_textureimage_node(self, texture_image=None, node_label='', pos_x=-1200, pos_y=0):
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.node_label = node_label
         self.texture_image = texture_image
 
-        if 'ShaderNodeTexImage' in [node.bl_idname for node in self.nodes]:
+        if 'ShaderNodeTexImage' in [node.bl_idname for node in self.nodes] \
+                and self.node_label in [node.label for node in self.nodes]:
             print('node already exists!')
         else:
-            self.textureimage_node = self.nodes.new('ShaderNodeTexImage')
-            self.textureimage_node.location = self.pos_x, self.pos_y
-            self.textureimage_node.image = self.texture_image.image
-            self.textureimage_node.width = self.node_width
+            self.texture_node = self.nodes.new('ShaderNodeTexImage')
+            self.texture_node.location = self.pos_x, self.pos_y
+            self.texture_node.label = self.node_label
+            self.texture_node.image = self.texture_image.image
+            self.texture_node.width = self.node_width
 
             #TODO: make it possible to define what needs to be connected, probably create a node connecter makes sense
-            #self.nodetree.links.new(self.shader_node.inputs[0], self.textureimage_node.outputs[0])
+            #self.nodetree.links.new(self.shader_node.inputs[0], self.texture_node.outputs[0])
 
     def create_normal_node(self, pos_x=-650, pos_y=-400):
         self.pos_x = pos_x
