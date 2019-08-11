@@ -28,7 +28,8 @@ class BuildNodes(bpy.types.Operator):
     bl_description = "buidling node trees"
 
     def __init__(self, node_label='', material=None, pos_x=0, pos_y=0, node_width=400,
-                 node_input=None, node_output=None, texture_image=None, node_color=(0.5, 0.5, 0.5)):
+                 node_input=None, node_output=None, texture_image=None, color_space='Raw',
+                 node_color=(0.5, 0.5, 0.5)):
         self.material = material
         self.node_label = node_label
         self.pos_x = pos_x
@@ -37,6 +38,7 @@ class BuildNodes(bpy.types.Operator):
         self.node_input = node_input
         self.node_output = node_output
         self.texture_image = texture_image
+        self.color_space = color_space
         self.node_color = node_color
         self.normal_node = None
         self.displacement_node = None
@@ -48,7 +50,6 @@ class BuildNodes(bpy.types.Operator):
         if not self.material.use_nodes:
             self.material.use_nodes = True
         self.nodes = self.material.node_tree.nodes
-
 
     def create_output_node(self):
         if 'ShaderNodeOutputMaterial' not in [node.bl_idname for node in self.nodes]:
@@ -67,12 +68,13 @@ class BuildNodes(bpy.types.Operator):
         else:
             pass
 
-    def create_texture_node(self, texture_image=None, node_label='', node_color=(0.5, 0.5, 0.5), pos_x=-1200, pos_y=0):
+    def create_texture_node(self, texture_image=None, color_space='Raw', node_label='', node_color=(0.5, 0.5, 0.5), pos_x=-1200, pos_y=0):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.node_label = node_label
         self.texture_image = texture_image
         self.node_color = node_color
+        self.color_space = color_space
 
         if 'ShaderNodeTexImage' in [node.bl_idname for node in self.nodes] \
                 and self.node_label in [node.label for node in self.nodes]:
@@ -83,6 +85,7 @@ class BuildNodes(bpy.types.Operator):
             self.texture_node.location = self.pos_x, self.pos_y
             self.texture_node.label = self.node_label
             self.texture_node.image = self.texture_image.image
+            self.texture_node.image.colorspace_settings.name = self.color_space
             self.texture_node.width = self.node_width
             self.texture_node.use_custom_color = True
             self.texture_node.color = self.node_color
@@ -99,8 +102,6 @@ class BuildNodes(bpy.types.Operator):
             self.normal_node.location = self.pos_x, self.pos_y
             self.normal_node.use_custom_color = True
             self.normal_node.color = self.node_color
-        else:
-            pass
 
     def create_displacement_node(self, node_color=(0.8, 0.3, 0.3), pos_x=-650, pos_y=-300):
         self.pos_x = pos_x
@@ -112,8 +113,6 @@ class BuildNodes(bpy.types.Operator):
             self.displacement_node.location = self.pos_x, self.pos_y
             self.displacement_node.use_custom_color = True
             self.displacement_node.color = self.node_color
-        else:
-            pass
 
     def link_nodes(self, nodes):
         self.nodes = nodes
@@ -176,8 +175,6 @@ class BuildNodes(bpy.types.Operator):
         #             print("outputs: ", idx, o)
         #             if o.name == 'BSDF':
         #                 return node.outputs[idx]
-
-        #
 
 
 def align_nodes(self):

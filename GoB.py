@@ -364,11 +364,26 @@ class GoB_OT_import(bpy.types.Operator):
             mat_node.create_displacement_node()
 
             # #create base color
-            mat_node.create_texture_node(texture_image=txtDiff, node_label=self.diffuse_label, node_color=(0.3, 1.0, 0.3), pos_y=300)
+            mat_node.create_texture_node(
+                    texture_image=txtDiff,
+                    node_label=self.diffuse_label,
+                    color_space='Linear',
+                    node_color=(0.3, 1.0, 0.3),
+                    pos_y=300)
             #create normal map
-            mat_node.create_texture_node(texture_image=txtNmp, node_label=self.normal_label, node_color=(0.5, 0.5, 1.0), pos_y=0)
+            mat_node.create_texture_node(
+                    texture_image=txtNmp,
+                    node_label=self.normal_label,
+                    color_space='Non-Color',
+                    node_color=(0.5, 0.5, 1.0),
+                    pos_y=0)
             # #create displacement map
-            mat_node.create_texture_node(texture_image=txtDisp, node_label=self.displacement_label, node_color=(0.8, 0.3, 0.3), pos_y=-300)
+            mat_node.create_texture_node(
+                    texture_image=txtDisp,
+                    node_label=self.displacement_label,
+                    color_space='Non-Color',
+                    node_color=(0.8, 0.3, 0.3),
+                    pos_y=-300)
 
 
 
