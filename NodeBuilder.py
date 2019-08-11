@@ -138,15 +138,18 @@ class BuildNodes(bpy.types.Operator):
             #TODO: make it possible to define what needs to be connected, probably create a node connecter makes sense
             #self.nodetree.links.new(self.shader_node.inputs[0], self.texture_node.outputs[0])
 
-    def create_normal_node(self, pos_x=-650, pos_y=-400):
+    def create_normal_node(self, node_color=(0.5, 0.5, 1.0), pos_x=-650, pos_y=-400):
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.node_color = node_color
 
         if 'ShaderNodeNormalMap' in [node.bl_idname for node in self.nodes]:
             print('node already exists!')
         else:
             self.normal_node = self.nodes.new('ShaderNodeNormalMap')
             self.normal_node.location = self.pos_x, self.pos_y
+            self.normal_node.use_custom_color = True
+            self.normal_node.color = self.node_color
 
             #self.nodetree.links.new(self.shader_node.inputs[19], self.normal_node.outputs[0])  # TODO: find index by input name
 
@@ -160,14 +163,19 @@ class BuildNodes(bpy.types.Operator):
             self.material.node_tree.links.new(self.normal_node.inputs[1], self.txtNmp_node.outputs[0])
             """
 
-    def create_displacement_node(self, pos_x=-300, pos_y=-600):
+    def create_displacement_node(self, node_color=(0.8, 0.3, 0.3), pos_x=-300, pos_y=-600):
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.node_color = node_color
+
         if 'ShaderNodeDisplacement' in [node.bl_idname for node in self.nodes]:
             print('node already exists!')
         else:
             self.displacement_node = self.nodes.new('ShaderNodeDisplacement')
             self.displacement_node.location = self.pos_x, self.pos_y
+            self.displacement_node.use_custom_color = True
+            self.displacement_node.color = self.node_color
+
             #self.nodetree.links.new(self.output_node.inputs[2], self.displacement_node.outputs[0])
 
             """ create this part in create_textureimage_node
