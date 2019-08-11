@@ -71,12 +71,17 @@ class GoB_OT_import(bpy.types.Operator):
     bl_label = "GOZ import"
     bl_description = "GOZ import background listener"
 
+
     def GoZit(self, pathFile):
         scn = bpy.context.scene
         pref = bpy.context.preferences.addons[__package__.split(".")[0]].preferences
         diff_map = False
         normal_map = False
         disp_map = False
+
+        self.diffuse_label = 'GoB_diffuse'
+        self.normal_label = 'GoB_normal'
+        self.displacement_label = 'GoB_displacement'
 
         utag = 0
         vertsData = []
@@ -312,31 +317,29 @@ class GoB_OT_import(bpy.types.Operator):
 
                 # Diff map
                 elif tag == b'\xc9\xaf\x00\x00':
-                    print("diff tag")
                     cnt = unpack('<I', goz_file.read(4))[0] - 16
                     goz_file.seek(8, 1)
                     diffName = unpack('%ss' % cnt, goz_file.read(cnt))[0]
-                    txtDiff = createTexture(diffName, 'GoB_diffuse')
+                    txtDiff = createTexture(diffName, self.diffuse_label)
                     diff_map = True
                     # me.uv_textures[0].data[0].image = img
 
-                # Disp map
-                elif tag == b'\xd9\xd6\x00\x00':
-                    print("Disp tag")
-                    cnt = unpack('<I', goz_file.read(4))[0] - 16
-                    goz_file.seek(8, 1)
-                    dispName = unpack('%ss' % cnt, goz_file.read(cnt))[0]
-                    txtDisp = createTexture(dispName, 'GoB_displacement')
-                    disp_map = True
-
                 # Normal map
                 elif tag == b'\x51\xc3\x00\x00':
-                    print("Normal tag")
                     cnt = unpack('<I', goz_file.read(4))[0] - 16
                     goz_file.seek(8, 1)
                     nmpName = unpack('%ss' % cnt, goz_file.read(cnt))[0]
-                    txtNmp = createTexture(nmpName, 'GoB_normal')
+                    txtNmp = createTexture(nmpName, self.normal_label)
                     normal_map = True
+
+                # Disp map
+                elif tag == b'\xd9\xd6\x00\x00':
+                    cnt = unpack('<I', goz_file.read(4))[0] - 16
+                    goz_file.seek(8, 1)
+                    dispName = unpack('%ss' % cnt, goz_file.read(cnt))[0]
+                    txtDisp = createTexture(dispName, self.displacement_label)
+                    disp_map = True
+
                 else:
                     print("unknown tag:{0}\ntry to skip it...".format(tag))
                     if utag >= 10:
@@ -357,17 +360,15 @@ class GoB_OT_import(bpy.types.Operator):
             #create base nodes
             mat_node.create_output_node()
             mat_node.create_shader_node()
+            mat_node.create_normal_node()
+            mat_node.create_displacement_node()
 
             # #create base color
-            mat_node.create_texture_node(texture_image=txtDiff, node_label='GoB_diffuse', node_color=(0.3, 1.0, 0.3), pos_y=300)
-
+            mat_node.create_texture_node(texture_image=txtDiff, node_label=self.diffuse_label, node_color=(0.3, 1.0, 0.3), pos_y=300)
             #create normal map
-            mat_node.create_normal_node()
-            mat_node.create_texture_node(texture_image=txtNmp, node_label='GoB_normal', node_color=(0.5, 0.5, 1.0), pos_y=0)
-
+            mat_node.create_texture_node(texture_image=txtNmp, node_label=self.normal_label, node_color=(0.5, 0.5, 1.0), pos_y=0)
             # #create displacement map
-            mat_node.create_displacement_node()
-            mat_node.create_texture_node(texture_image=txtDisp, node_label='GoB_displacement', node_color=(0.8, 0.3, 0.3), pos_y=-300)
+            mat_node.create_texture_node(texture_image=txtDisp, node_label=self.displacement_label, node_color=(0.8, 0.3, 0.3), pos_y=-300)
 
 
 
