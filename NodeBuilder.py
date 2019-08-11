@@ -175,7 +175,7 @@ def link_nodes(self):
     #self.material.node_tree.links.new(self.output_node.inputs[0], self.shader_node.outputs[0])
     #self.material.node_tree.links.new(self.shader_node.inputs[0], self.texture_node.outputs[0])
 
-    #self.nodetree.links.new(self.shader_node.inputs[19], self.normal_node.outputs[0]) 
+    #self.nodetree.links.new(self.shader_node.inputs[19], self.normal_node.outputs[0])
     #self.nodetree.links.new(self.output_node.inputs[2], self.displacement_node.outputs[0])
 
 
