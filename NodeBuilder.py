@@ -4,50 +4,24 @@
 The purpose of this module is to create a material node that can translate the zbrush setup into a blender node material.
 The material can contain a diffuse texture a normal map and a displacement map.
 
-    - create node material
-
     - create node types
         - output
         - shader
-        - displacement map
-        - normal map
-        - image texture
-
-    - connect node types
-
-    - configure nodes
-        - define the input for the node treee
-
-    - test integrity of node tree
+        - displacement map (non_color / Linear)
+        - normal map (non_color)
+        - image texture (Linear
 """
+
+"""    
+ShaderNodeOutputMaterial
+ShaderNodeBsdfPrincipled    
+ShaderNodeTexImage
+ShaderNodeNormalMap
+ShaderNodeDisplacement
+"""
+
+
 import bpy
-
-class CreateNodeMaterial():
-    pass
-
-
-class CreateNodes():
-    pass
-
-
-class ConnectNodes():
-    pass
-
-
-class ConfigureNodes():
-    pass
-
-
-class TestNodes():
-    def __init__(self, name = None):
-        self.name = name
-        print("my name is ", name)
-
-
-        #if not mat.use_nodes:
-        #   mat.use_nodes = True
-
-
 
 
 class BuildNodes(bpy.types.Operator):
@@ -72,61 +46,36 @@ class BuildNodes(bpy.types.Operator):
         self.texture_node = None
         self.shader_node = None
         self.output_node = None
-        print("self.material:", self.material)
 
         # enable nodes
         if not self.material.use_nodes:
             self.material.use_nodes = True
-        self.nodetree = self.material.node_tree
-        self.nodes = self.nodetree.nodes
+        self.nodes = self.material.node_tree.nodes
 
-        """
-        ## node.bl_idname
-    
-        ShaderNodeOutputMaterial
-        ShaderNodeBsdfPrincipled
-    
-        ShaderNodeTexImage
-        ShaderNodeNormalMap
-        ShaderNodeDisplacement
-        """
-
-        # if mat.use_nodes:
-        #     ntree = mat.node_tree
-        #     node = ntree.nodes.get("Diffuse BSDF", None)
-        #     if node is not None:
-        #         print("We Found:", node)
 
 
     def create_output_node(self):
-        if 'ShaderNodeOutputMaterial' in [node.bl_idname for node in self.nodes]:
-            print('node already exists!')
-        else:
+        if 'ShaderNodeOutputMaterial' not in [node.bl_idname for node in self.nodes]:
             self.output_node = self.nodes.new('ShaderNodeOutputMaterial')
             self.output_node.location = self.pos_x, self.pos_y
 
-
-    def create_shader_node(self, pos_x=-400, pos_y=0):
+    def create_shader_node(self, pos_x=-300, pos_y=400):
         self.pos_x = pos_x
         self.pos_y = pos_y
-        if 'ShaderNodeBsdfPrincipled' in [node.bl_idname for node in self.nodes]:
-            print('node already exists!')
-        else:
+        if 'ShaderNodeBsdfPrincipled' not in [node.bl_idname for node in self.nodes]:
             self.shader_node = self.nodes.new('ShaderNodeBsdfPrincipled')
             self.shader_node.location = self.pos_x, self.pos_y
-            #self.nodetree.links.new(self.output_node.inputs[0], self.shader_node.outputs[0])
+            #self.material.node_tree.links.new(self.output_node.inputs[0], self.shader_node.outputs[0])
 
-    def create_textureimage_node(self, texture_image=None, node_label='', node_color=(0.5, 0.5, 0.5), pos_x=-1200, pos_y=0):
+    def create_texture_node(self, texture_image=None, node_label='', node_color=(0.5, 0.5, 0.5), pos_x=-1200, pos_y=0):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.node_label = node_label
         self.texture_image = texture_image
         self.node_color = node_color
 
-        if 'ShaderNodeTexImage' in [node.bl_idname for node in self.nodes] \
-                and self.node_label in [node.label for node in self.nodes]:
-            print('node already exists!')
-        else:
+        if 'ShaderNodeTexImage' not in [node.bl_idname for node in self.nodes] \
+                and self.node_label not in [node.label for node in self.nodes]:
             self.texture_node = self.nodes.new('ShaderNodeTexImage')
             self.texture_node.location = self.pos_x, self.pos_y
             self.texture_node.label = self.node_label
@@ -135,8 +84,9 @@ class BuildNodes(bpy.types.Operator):
             self.texture_node.use_custom_color = True
             self.texture_node.color = self.node_color
 
-            #TODO: make it possible to define what needs to be connected, probably create a node connecter makes sense
-            #self.nodetree.links.new(self.shader_node.inputs[0], self.texture_node.outputs[0])
+        link_nodes(self)
+        #TODO: make it possible to define what needs to be connected, probably create a node connecter makes sense
+        #self.material.node_tree.links.new(self.shader_node.inputs[0], self.texture_node.outputs[0])
 
     def create_normal_node(self, node_color=(0.5, 0.5, 1.0), pos_x=-650, pos_y=-400):
         self.pos_x = pos_x
@@ -187,25 +137,73 @@ class BuildNodes(bpy.types.Operator):
             self.material.node_tree.links.new(self.displacement_node.inputs[0], self.txtDisp_node.outputs[0])
             """
 
-    def align_nodes(self):
-        pass
 
-        # output_node = nodes.get('Material Output')
-        # shader_node = nodes.get('Principled BSDF')
+def link_nodes(self):
+    """
+    connections to establish:
+    Image Texture (Color)                                               --> (Base Color) Principled BSDF (BSDF)       -->  (Surface) Material Output
+    Image Texture (Color)   --> (Color) Normal Map (Normal)             --> (Normal) Principled BSDF
+    Image Texture (Color)   --> (Height) Displacement (Displacement)                                                   -->  (Displacement) Material Output
+    """
 
-        # TODO: trace color node to input of output node
-        #txtdiff_node = nodes.get('ShaderNodeTexImage')
-        # for node_input in output_node.inputs:
-        #     print("node inputs: ", input)
-        #     if (node_input.name == 'Base Color' or node_input.name == 'Color') and node_input.links:
-        #         pass
-        #     if node_input.name == 'Normal' and node_input.links:
-        #         pass
-        #     if node_input.name == 'Color' and node_input.links:
-        #         pass
-        #
-        #     if node_input.name == 'Height' and node_input.links:
-        #         pass
+    for node in self.nodes:
+        print(node.bl_idname)
+        if node.bl_idname == 'ShaderNodeTexImage':
+            print("Texture node Labels:", node.label)
+            '''still need to check for the type, can the label be used?'''
+            pass
+        elif node.bl_idname == 'ShaderNodeNormalMap':
+            pass
+        elif node.bl_idname == 'ShaderNodeDisplacement':
+            pass
+        elif node.bl_idname == 'ShaderNodeOutputMaterial':
+            pass
+        elif node.bl_idname == 'ShaderNodeBsdfPrincipled':
+            for idx, i in enumerate(node.inputs):
+                print("inputs: ", idx, i.name)
+                if i.name == 'Base Color':
+                    return node.inputs[idx]
+                elif i.name == 'Normal':
+                    return node.inputs[idx]
+            for idx, o in enumerate(node.outputs):
+                print("outputs: ", idx, o)
+                if o.name == 'BSDF':
+                    return node.outputs[idx]
 
 
+
+    #self.material.node_tree.links.new(self.output_node.inputs[0], self.shader_node.outputs[0])
+    #self.material.node_tree.links.new(self.shader_node.inputs[0], self.texture_node.outputs[0])
+
+    #self.nodetree.links.new(self.shader_node.inputs[19], self.normal_node.outputs[0]) 
+    #self.nodetree.links.new(self.output_node.inputs[2], self.displacement_node.outputs[0])
+
+
+def align_nodes(self):
+
+    # if mat.use_nodes:
+    #     ntree = mat.node_tree
+    #     node = ntree.nodes.get("Diffuse BSDF", None)
+    #     if node is not None:
+    #         print("We Found:", node)
+
+    # output_node = nodes.get('Material Output')
+    # shader_node = nodes.get('Principled BSDF')
+
+    # TODO: trace color node to input of output node
+    #txtdiff_node = nodes.get('ShaderNodeTexImage')
+    # for node_input in output_node.inputs:
+    #     print("node inputs: ", input)
+    #     if (node_input.name == 'Base Color' or node_input.name == 'Color') and node_input.links:
+    #         pass
+    #     if node_input.name == 'Normal' and node_input.links:
+    #         pass
+    #     if node_input.name == 'Color' and node_input.links:
+    #         pass
+    #
+    #     if node_input.name == 'Height' and node_input.links:
+    #         pass
+
+
+    pass
 

@@ -353,20 +353,23 @@ class GoB_OT_import(bpy.types.Operator):
 
             #construct material node tree
             mat_node = NodeBuilder.BuildNodes(self, material=objMat)
+
             #create base nodes
             mat_node.create_output_node()
             mat_node.create_shader_node()
+
             # #create base color
-            mat_node.create_textureimage_node(texture_image=txtDiff, node_label='GoB_diffuse', node_color=(0.3, 1.0, 0.3))
+            mat_node.create_texture_node(texture_image=txtDiff, node_label='GoB_diffuse', node_color=(0.3, 1.0, 0.3), pos_y=300)
+
             #create normal map
             mat_node.create_normal_node()
-            mat_node.create_textureimage_node(texture_image=txtNmp, node_label='GoB_normal', node_color=(0.5, 0.5, 1.0), pos_y=-300)
+            mat_node.create_texture_node(texture_image=txtNmp, node_label='GoB_normal', node_color=(0.5, 0.5, 1.0), pos_y=0)
+
             # #create displacement map
             mat_node.create_displacement_node()
-            mat_node.create_textureimage_node(texture_image=txtDisp, node_label='GoB_displacement', node_color=(0.8, 0.3, 0.3), pos_y=-600)
+            mat_node.create_texture_node(texture_image=txtDisp, node_label='GoB_displacement', node_color=(0.8, 0.3, 0.3), pos_y=-300)
 
-            #mat_nodes.connect_nodes()
-            #mat_node.align_nodes()
+
 
         #me.materials.append(objMat)
         return
@@ -408,7 +411,7 @@ class GoB_OT_import(bpy.types.Operator):
 
 def createTexture(texturename, imgname):
     head, tail = ntpath.split(texturename.decode('utf-8'))
-    if not tail in bpy.data.images:
+    if tail not in bpy.data.images:
         img = bpy.data.images.load(texturename.strip().decode('utf-8'))
         texture = bpy.data.textures.new(imgname, 'IMAGE')
         print("creating new texture: ", tail)
