@@ -55,7 +55,7 @@ class BuildNodes(bpy.types.Operator):
     bl_label = "build nodes"
     bl_description = "buidling node trees"
     def __init__(self, node_label='', material=None, pos_x=0, pos_y=0, node_width=400,
-                 node_input=None, node_output=None, texture_image=None):
+                 node_input=None, node_output=None, texture_image=None, node_color=(0.5, 0.5, 0.5)):
 
         self.material = material
         self.node_label = node_label
@@ -65,6 +65,7 @@ class BuildNodes(bpy.types.Operator):
         self.node_input = node_input
         self.node_output = node_output
         self.texture_image = texture_image
+        self.node_color = node_color
 
         self.normal_node = None
         self.displacement_node = None
@@ -115,11 +116,12 @@ class BuildNodes(bpy.types.Operator):
             self.shader_node.location = self.pos_x, self.pos_y
             #self.nodetree.links.new(self.output_node.inputs[0], self.shader_node.outputs[0])
 
-    def create_textureimage_node(self, texture_image=None, node_label='', pos_x=-1200, pos_y=0):
+    def create_textureimage_node(self, texture_image=None, node_label='', node_color=(0.5, 0.5, 0.5), pos_x=-1200, pos_y=0):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.node_label = node_label
         self.texture_image = texture_image
+        self.node_color = node_color
 
         if 'ShaderNodeTexImage' in [node.bl_idname for node in self.nodes] \
                 and self.node_label in [node.label for node in self.nodes]:
@@ -130,6 +132,8 @@ class BuildNodes(bpy.types.Operator):
             self.texture_node.label = self.node_label
             self.texture_node.image = self.texture_image.image
             self.texture_node.width = self.node_width
+            self.texture_node.use_custom_color = True
+            self.texture_node.color = self.node_color
 
             #TODO: make it possible to define what needs to be connected, probably create a node connecter makes sense
             #self.nodetree.links.new(self.shader_node.inputs[0], self.texture_node.outputs[0])
