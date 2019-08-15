@@ -23,6 +23,17 @@ ShaderNodeDisplacement
 
 
 class BuildNodes(bpy.types.Operator):
+    """
+    The purpose of this module is to create a material node that can translate the zbrush setup into a blender node material.
+    The material can contain a diffuse texture a normal map and a displacement map.
+        - create node types
+            - output
+            - shader
+            - displacement map (non_color / Linear)
+            - normal map (non_color)
+            - image texture (Linear
+    """
+
     bl_idname = "scene.nodebuilder"
     bl_label = "build nodes"
     bl_description = "buidling node trees"
