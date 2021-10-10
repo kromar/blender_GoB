@@ -321,11 +321,15 @@ class GoB_OT_import(Operator):
                         for face in bm.faces:
                             for index, loop in enumerate(face.loops):            
                                 x, y = unpack('<2f', goz_file.read(8)) 
-                                loop[uv_layer].uv = x, 1.0-y
+                                loop[uv_layer].uv = x, 1.0-y                                    
+                                print(index, loop.index, x, 1-y)
+                                
                             #uv's always have 4 coords so its required to read one more if a trinalge is in the mesh
                             # zbrush seems to always write out 4 coords            
                             if index < 3:       
                                 x, y = unpack('<2f', goz_file.read(8))
+                                print("    \____", index, x, 1-y)
+                            print("\n")
 
                         bm.to_mesh(me)   
                         bm.free()    
@@ -1870,6 +1874,17 @@ def apply_modifiers(obj):
         start_time = profiler(time.perf_counter(), f"Export Profiling: {obj.name}")
         start_total_time = profiler(time.perf_counter(), "")
 
+def apply_modifiers(obj): 
+    modifiers =  ['DATA_TRANSFER', 'MESH_CACHE', 'MESH_SEQUENCE_CACHE', 'NORMAL_EDIT', 
+                'WEIGHTED_NORMAL', 'UV_PROJECT', 'UV_WARP', 'VERTEX_WEIGHT_EDIT', 'VERTEX_WEIGHT_MIX', 
+                'VERTEX_WEIGHT_PROXIMITY', 'ARRAY', 'BEVEL', 'BOOLEAN', 'BUILD', 'DECIMATE', 'EDGE_SPLIT', 
+                'NODES', 'MASK', 'MIRROR', 'MESH_TO_VOLUME', 'MULTIRES', 'REMESH', 'SCREW', 'SKIN', 
+                'SOLIDIFY', 'SUBSURF', 'TRIANGULATE', 'VOLUME_TO_MESH', 'WELD', 'WIREFRAME', 'ARMATURE', 
+                'CAST', 'CURVE', 'DISPLACE', 'HOOK', 'LAPLACIANDEFORM', 'LATTICE', 'MESH_DEFORM', 
+                'SHRINKWRAP', 'SIMPLE_DEFORM', 'SMOOTH', 'CORRECTIVE_SMOOTH', 'LAPLACIANSMOOTH', 
+                'SURFACE_DEFORM', 'WARP', 'WAVE', 'VOLUME_DISPLACE', 'CLOTH', 'COLLISION', 'DYNAMIC_PAINT', 
+                'EXPLODE', 'FLUID', 'OCEAN', 'PARTICLE_INSTANCE', 'PARTICLE_SYSTEM', 'SOFT_BODY', 'SURFACE'
+                ]     
     depsgraph = bpy.context.evaluated_depsgraph_get()  
     if prefs().performance_profiling: 
         start_time = profiler(start_time, "Make Mesh depsgraph")
