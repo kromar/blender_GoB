@@ -837,8 +837,37 @@ class GoB_OT_export(Operator):
             GoBVars.write(pack('<2B',0x00, 0x53))   #.S
             name = prefs().project_path
             GoBVars.write(name.encode('utf-8')) 
-            if prefs().performance_profiling: 
-                start_time = profiler(start_time, "    variablesFile: Write Project Path")
+
+
+
+            print("active camera: ", bpy.context.scene.camera.data.name)
+            camera_obj_name = bpy.context.scene.camera.name
+            camera_data_name = bpy.context.scene.camera.data.name
+            acive_camera = bpy.data.cameras[camera_data_name]
+
+            # 7: camera lens
+            focal_length = acive_camera.lens
+            print("Camera: ", camera_obj_name, camera_data_name)
+            print("focal_length: ", focal_length, "mm")
+            camera_lens = str(focal_length) 
+            GoBVars.write(pack('<2B',0x00, 0x53))   #.S  )       
+            GoBVars.write(camera_lens.encode('utf-8')) 
+
+            # 8: camera transform            
+            rotation = bpy.data.objects[camera_obj_name].rotation_euler
+            location = bpy.data.objects[camera_obj_name].location
+            scale = bpy.data.objects[camera_obj_name].scale
+
+            print("rotation: ", rotation)
+            print("location: ", location)
+
+            camera_transform = str(location[0]) +','+ str(location[1]) +','+ str(location[2]) +','+ str(scale[0]) +','+ str(scale[1]) +','+ str(scale[2]) +','+ str(rotation[0]) +','+ str(rotation[1]) +','+ str(rotation[2])
+            print(camera_transform)
+
+            GoBVars.write(pack('<2B',0x00, 0x53))   #.S  ) 
+            GoBVars.write(camera_transform.encode('utf-8')) 
+
+
             #end  
             GoBVars.write(pack('<B', 0x00))  #. 
         if prefs().performance_profiling: 
@@ -1320,6 +1349,9 @@ class GoB_OT_export(Operator):
                     else:
                         ShowReport(self, ["Object: ", obj.name], "GoB: ZBrush can not import objects without faces", 'COLORSET_01_VEC') 
                     
+                elif  obj.type == 'CAMERA':
+                    print("Exporting camera")
+
                 else:
                     ShowReport(self, [obj.type, obj.name], "GoB: unsupported obj.type found:", 'COLORSET_01_VEC') 
                     #print("GoB: unsupported obj.type found:", obj.type, obj.name)

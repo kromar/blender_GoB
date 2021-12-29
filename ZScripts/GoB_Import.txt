@@ -11,7 +11,7 @@ author: Daniel Grauer
 [VarDef,finalReportreportDuration,100] //Display Duration (in seconds) (0:wait for user action(default), -1:combine with next note command),
 [VarDef,maxSubtools,999]  
 
-[VarDef,GoBList(7),""]          // NOTE: if list size changes gob export list size needs to be updated as well
+[VarDef,GoBList(8),""]          // NOTE: if list size changes gob export list size needs to be updated as well
     /* File: Gob_variables.zvr
         0: fileExtension, 
         1: textureFormat, 
@@ -20,6 +20,7 @@ author: Daniel Grauer
         4: dispSuffix, 
         5: gobVersion,
         6: gozProjectPath,
+        7: gobCamera,
     */
 
 
@@ -90,6 +91,16 @@ author: Daniel Grauer
         4: dispSuffix, 
         5: gobVersion,
         6: gozProjectPath, 
+        7: gobCamera
+
+        https://www.zbrushcentral.com/t/zscript-rotation-problem-help-me/236204
+        TransformSet	[TransformSet, xPosition, yPosition, zPosition, xScale, yScale, zScale, xRotate, yRotate, zRotate]
+        [loop,180,
+        [TransformSet,x,y,z,xs,ys,zs,xr,yr,zr]
+        [VarSet,xr,xr+5]
+        [VarSet,yr,yr+5]
+        [VarSet,zr,zr+5]
+        ]
         */
 
 	[If,[FileExists,variablesFile],    
@@ -100,7 +111,8 @@ author: Daniel Grauer
         [VarSet,normSuffix,[StrMerge,GoBList(3),""]]
         [VarSet,dispSuffix,[StrMerge,GoBList(4),""]]  
         [VarSet,gobVersion,[StrMerge,GoBList(5),""]]  
-        [VarSet,gozProjectPath,[StrMerge,GoBList(6),""]]      
+        [VarSet,gozProjectPath,[StrMerge,GoBList(6),""]]  
+        [VarSet,gobCamera,[StrMerge,GoBList(7),""]]    
     , 
         [Note,[StrMerge,"\n\nGoB_variables.zvr not Found", "\naborting import"],,reportDuration]
         [Exit]
