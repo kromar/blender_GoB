@@ -473,8 +473,8 @@ class GoB_Preferences(AddonPreferences):
         box.label(text='GoB Troubleshooting', icon='QUESTION')   
         import platform
         if platform.system() == 'Windows':
-            icons = GoB.preview_collections["main"]  
-            box.operator( "gob.install_goz", text="Install GoZ", icon_value=icons["GOZ_SEND"].icon_id ) 
+            icons = GoB.custom_icons["main"]  
+            box.operator( "gob.install_goz", text="Install GoZ", icon_value=icons["goz_send"].icon_id ) 
             
         
 

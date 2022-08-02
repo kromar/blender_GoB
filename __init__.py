@@ -54,29 +54,28 @@ classes = (
     addon_updater.AU_OT_SearchUpdates,
     )
 
+icons = ["goz_send" , "goz_sync_enabled", "goz_sync_disabled"]
+custom_icons = {}
 
 def register():
     [bpy.utils.register_class(c) for c in classes]
-
-    global icons
-    icons = bpy.utils.previews.new()
-    icons_dir = os.path.join(os.path.dirname(__file__), "icons")
-    icons.load("GOZ_SEND", os.path.join(icons_dir, "goz_send.png"), 'IMAGE')
-    icons.load("GOZ_SYNC_ENABLED", os.path.join(icons_dir, "goz_sync_enabled.png"), 'IMAGE')
-    icons.load("GOZ_SYNC_DISABLED", os.path.join(icons_dir, "goz_sync_disabled.png"), 'IMAGE')
-    GoB.preview_collections["main"] = icons 
+    
+    global custom_icons
+    custom_icons = bpy.utils.previews.new()
+    my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
+    for icon in icons :
+       custom_icons.load( icon , os.path.join(my_icons_dir, icon + ".png" )  , 'IMAGE')    
+    GoB.custom_icons["main"] = custom_icons 
     bpy.types.TOPBAR_HT_upper_bar.prepend(GoB.draw_goz_buttons)
 
 
 def unregister():
-
-    for preferences.custom_icons in GoB.preview_collections.values():
-        bpy.utils.previews.remove(icons)
-    GoB.preview_collections.clear()
+    [bpy.utils.unregister_class(c) for c in classes]
 
     bpy.types.TOPBAR_HT_upper_bar.remove(GoB.draw_goz_buttons)
 
-    [bpy.utils.unregister_class(c) for c in classes]
+    [bpy.utils.previews.remove(c) for c in GoB.custom_icons.values()]
+    GoB.custom_icons.clear()
 
     if bpy.app.timers.is_registered(GoB.run_import_periodically):
         bpy.app.timers.unregister(GoB.run_import_periodically)

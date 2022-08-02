@@ -76,14 +76,15 @@ isMacOS, PATH_GOZ, PATH_GOB, PATH_BLENDER = gob_init_os_paths()
 #print("PATH_GOZ: ", PATH_GOZ)
 
 run_background_update = False
-icons = None
 cached_last_edition_time = time.perf_counter()
 last_cache = 0
-preview_collections = {}
+custom_icons = {}
 gob_import_cache = []
 
 def draw_goz_buttons(self, context):
-    global run_background_update, icons
+    global run_background_update
+    icons = custom_icons["main"]
+
     if context.region.alignment == 'RIGHT':
         layout = self.layout
         row = layout.row(align=True)
@@ -91,18 +92,18 @@ def draw_goz_buttons(self, context):
         icons = preview_collections["main"]
 
         if prefs().show_button_text:
-            row.operator(operator="scene.gob_export_button", text="Export", emboss=True, icon_value=icons["GOZ_SEND"].icon_id)
+            row.operator(operator="scene.gob_export_button", text="Export", emboss=True, icon_value=icons["goz_send"].icon_id)
             if run_background_update:
-                row.operator(operator="scene.gob_import", text=iface_("Import", None), emboss=True, depress=True, icon_value=icons["GOZ_SYNC_ENABLED"].icon_id).action = 'AUTO'
+                row.operator(operator="scene.gob_import", text=iface_("Import", None), emboss=True, depress=True, icon_value=icons["goz_sync_enabled"].icon_id).action = 'AUTO'
             else:
-                row.operator(operator="scene.gob_import", text=iface_("Import", None), emboss=True, depress=False, icon_value=icons["GOZ_SYNC_DISABLED"].icon_id).action = 'AUTO'
+                row.operator(operator="scene.gob_import", text=iface_("Import", None), emboss=True, depress=False, icon_value=icons["goz_sync_disabled"].icon_id).action = 'AUTO'
             row.operator(operator="scene.gob_import", text="Manual", emboss=True, depress=False, icon='IMPORT').action = 'MANUAL'
         else:
-            row.operator(operator="scene.gob_export_button", text="", emboss=True, icon_value=icons["GOZ_SEND"].icon_id)
+            row.operator(operator="scene.gob_export_button", text="", emboss=True, icon_value=icons["goz_send"].icon_id)
             if run_background_update:
-                row.operator(operator="scene.gob_import", text="", emboss=True, depress=True, icon_value=icons["GOZ_SYNC_ENABLED"].icon_id).action = 'AUTO'
+                row.operator(operator="scene.gob_import", text="", emboss=True, depress=True, icon_value=icons["goz_sync_enabled"].icon_id).action = 'AUTO'
             else:
-                row.operator(operator="scene.gob_import", text="", emboss=True, depress=False, icon_value=icons["GOZ_SYNC_DISABLED"].icon_id).action = 'AUTO'
+                row.operator(operator="scene.gob_import", text="", emboss=True, depress=False, icon_value=icons["goz_sync_disabled"].icon_id).action = 'AUTO'
             row.operator(operator="scene.gob_import", text="", emboss=True, depress=False, icon='IMPORT').action = 'MANUAL'
 
 start_time = None
