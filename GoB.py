@@ -35,9 +35,11 @@ from bpy.app.translations import pgettext_iface as iface_
 
 gob_version = str([addon.bl_info.get('version', (-1,-1,-1)) for addon in addon_utils.modules() if addon.bl_info['name'] == 'GoB'][0])
 
+
 def prefs():
     user_preferences = bpy.context.preferences
     return user_preferences.addons[__package__].preferences 
+
 
 def gob_init_os_paths():   
     isMacOS = False
@@ -82,6 +84,7 @@ last_cache = 0
 preview_collections = {}
 gob_import_cache = []
 
+
 def draw_goz_buttons(self, context):
     global run_background_update, icons
     if context.region.alignment == 'RIGHT':
@@ -104,6 +107,7 @@ def draw_goz_buttons(self, context):
             else:
                 row.operator(operator="scene.gob_import", text="", emboss=True, depress=False, icon_value=icons["GOZ_SYNC_DISABLED"].icon_id).action = 'AUTO'
             row.operator(operator="scene.gob_import", text="", emboss=True, depress=False, icon='IMPORT').action = 'MANUAL'
+
 
 start_time = None
 class GoB_OT_import(Operator):
@@ -239,7 +243,6 @@ class GoB_OT_import(Operator):
                 obj = bpy.data.objects.new(objName, me)
                 bpy.context.view_layer.active_layer_collection.collection.objects.link(obj) 
                 me.from_pydata(vertsData, [], facesData)     
-                #me.transform(obj.matrix_world.inverted())      
            
             # object already exist
             else:                
@@ -252,7 +255,12 @@ class GoB_OT_import(Operator):
                     bm.faces.ensure_lookup_table() 
                     #update vertex positions
                     for i, v in enumerate(bm.verts):
-                        v.co  = mathutils.Vector(vertsData[i])  
+                        if prefs().import_keep_transfomration:    
+                            v.co  = obj.matrix_world @ mathutils.Vector(vertsData[i])
+                            print("t1: ", mathutils.Vector(vertsData[i]), v.co)
+                        else:
+                            v.co  = mathutils.Vector(vertsData[i])  
+                            print("t2: ", v.co)
                     bm.to_mesh(me)   
                     bm.free()
                     #bmesh.update_edit_mesh(mesh, loop_triangles=True, destructive=True) #https://docs.blender.org/api/current/bmesh.html#bmesh.update_edit_mesh
@@ -262,12 +270,15 @@ class GoB_OT_import(Operator):
                     me.clear_geometry() #NOTE: if this is done in edit mode we get a crash                         
                     me.from_pydata(vertsData, [], facesData)
                     #obj.data = me
+
+        
             if prefs().performance_profiling:  
                 start_time = profiler(start_time, "____create mesh") 
            
             me,_ = apply_transformation(me, is_import=True)
             # assume we have to reverse transformation from obj mode, this is needed after matrix transfomrmations      
-            me.transform(obj.matrix_world.inverted())   
+            me.transform(obj.matrix_world.inverted())
+
             if prefs().performance_profiling:  
                 start_time = profiler(start_time, "____transform mesh")      
            
@@ -684,7 +695,7 @@ class GoB_OT_import(Operator):
             print(100*"-") 
 
         wm = context.window_manager
-        wm.progress_begin(0,100)
+        wm.progress_begin(0,100) #progress indicator at cursor position
         step =  100  / len(goz_obj_paths)
         for i, ztool_path in enumerate(goz_obj_paths):          
             if ztool_path not in gob_import_cache:
@@ -1247,7 +1258,7 @@ class GoB_OT_export(Operator):
             bpy.ops.object.mode_set(context.copy(), mode='OBJECT')       
         
         wm = context.window_manager
-        wm.progress_begin(0,100)
+        wm.progress_begin(0,100) #progress indicator at cursor position
         step =  100  / len(context.selected_objects)
         surface_types = ['SURFACE', 'CURVE', 'FONT', 'META']
         
@@ -1397,6 +1408,7 @@ class GoB_OT_export_button(Operator):
         as_tool = event.shift or event.ctrl or event.alt
         bpy.ops.scene.gob_export(as_tool=as_tool)
         return {'FINISHED'}
+
 
 def find_zbrush(self, context):
     #get the highest version of zbrush and use it as default zbrush to send to
@@ -1643,11 +1655,10 @@ def create_material_node(mat, diff_texture=None, norm_texture=None, disp_texture
         pass
 
 
-
 def apply_transformation(me, is_import=True): 
     mat_transform = None
     scale = 1.0
-    
+
     if prefs().use_scale == 'BUNITS':
         scale = 1 / bpy.context.scene.unit_settings.scale_length
 
@@ -1661,74 +1672,50 @@ def apply_transformation(me, is_import=True):
             scale =  1 / prefs().zbrush_scale * max
             if prefs().debug_output:
                 print("unit scale 2: ", obj.dimensions, i, max, scale, obj.dimensions * scale)
-            
-    #import
-    if prefs().flip_up_axis:  # fixes bad mesh orientation for some people
+    
+    
+    
+    from bpy_extras.io_utils import (
+            axis_conversion,
+        )
+    
+    # IMPORT    
+    if is_import: 
+        if prefs().flip_up_axis:
+            axis_up = '-Y'
+        else:
+            axis_up = 'Y'
+
         if prefs().flip_forward_axis:
-            if is_import:
-                me.transform(mathutils.Matrix([
-                    (1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, -1.0, 0.0),
-                    (0.0, 1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * scale
-                )
-            else:
-                #export
-                mat_transform = mathutils.Matrix([
-                    (1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, 1.0, 0.0),
-                    (0.0, -1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * (1/scale)
+            axis_forward = 'Z'      
         else:
-            if is_import:
-                #import
-                me.transform(mathutils.Matrix([
-                    (-1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, 1.0, 0.0),
-                    (0.0, 1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * scale
-                )
-            else:
-                #export
-                mat_transform = mathutils.Matrix([
-                    (-1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, 1.0, 0.0),
-                    (0.0, 1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * (1/scale)
+            axis_forward = '-Z'  
+
+        global_matrix = axis_conversion(to_forward = axis_forward,
+                                        to_up = axis_up,
+                                        ).to_4x4() 
+        me.transform(global_matrix * scale)
+
+    # EXPORT
     else:
-        if prefs().flip_forward_axis:            
-            if is_import:
-                #import
-                me.transform(mathutils.Matrix([
-                    (-1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, -1.0, 0.0),
-                    (0.0, -1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * scale
-                )
-                #me.flip_normals()
-            else:
-                #export
-                mat_transform = mathutils.Matrix([
-                    (-1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, -1.0, 0.0),
-                    (0.0, -1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * (1/scale)
+        if prefs().flip_up_axis:
+            axis_up = 'Y'
         else:
-            if is_import:
-                #import
-                me.transform(mathutils.Matrix([
-                    (1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, 1.0, 0.0),
-                    (0.0, -1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * scale
-                )
-            else:
-                #export
-                mat_transform = mathutils.Matrix([
-                    (1.0, 0.0, 0.0, 0.0),
-                    (0.0, 0.0, -1.0, 0.0),
-                    (0.0, 1.0, 0.0, 0.0),
-                    (0.0, 0.0, 0.0, 1.0)]) * (1/scale)
+            axis_up = '-Y'
+
+        if prefs().flip_forward_axis:
+            axis_forward = '-Z'      
+        else:
+            axis_forward = 'Z' 
+            
+        global_matrix = axis_conversion(to_forward = axis_forward,
+                                        to_up = axis_up,
+                                        ).to_4x4() 
+        mat_transform = global_matrix * (1/scale)
+
+        
+    print("global_matrix: ", global_matrix)
+
     return me, mat_transform
 
 
@@ -1792,6 +1779,7 @@ def clone_as_object(obj, link=True):
     if link:
         bpy.context.view_layer.active_layer_collection.collection.objects.link(obj_clone) 
     return obj_clone
+
 
 def export_poll(cls, context):  
     # do not allow export if no objects are selected
@@ -1941,6 +1929,7 @@ def apply_modifiers(obj):
 def random_color(base=16):    
     randcolor = "%5x" % random.randint(0x1111, 0xFFFF)
     return int(randcolor, base)                  
+
 
 def mesh_welder(obj, d = 0.0001):    
     " merges vertices that are closer than d to each other" 

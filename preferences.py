@@ -149,7 +149,23 @@ class GoB_Preferences(AddonPreferences):
     show_button_text: BoolProperty(
         name="Show Buttons Text",
         description="Show Text on the Import/Export Buttons",
-        default=True) # Default: True          
+        default=False) # Default: True    
+
+    axis_up: EnumProperty(
+            name="Up Axis",
+            description="Up Axis",
+            items=[('Z', 'Z', ''),
+                   ('-Z', '-Z', ''),
+                   ],
+            default='Z')   # Default: Z
+
+    axis_forward: EnumProperty(
+            name="Forward Axis",
+            description="Forward Axis",
+            items=[('Y', 'Y', ''),
+                   ('-Y', '-Y', ''),
+                   ],
+            default='Y')   # Default: Y 
 
     """      
     texture_format: EnumProperty(
@@ -338,17 +354,25 @@ class GoB_Preferences(AddonPreferences):
                 ('sRGB', 'sRGB ', 'Standard RGB Display Space'),
                 ('XYZ', 'XYZ ', 'XYZ'),
                 ],
-        default='Non-Color') # Default: Non-Color      
+        default='Non-Color') # Default: Non-Color 
+        
+    import_keep_transfomration: BoolProperty(
+        name="Keep Object Transformation",
+        description="Keep Transformations when importing a Object",
+        default=True) # Default: False     
+    
     
     # DEBUG
     debug_dry_export: BoolProperty(
         name="Debug: Dry Export",
         description="Run export without launching Zbrush",
-        default=False) # Default:False          
+        default=False) # Default:False      
+
     performance_profiling: BoolProperty(
         name="Debug: Performance profiling",
         description="Show timing output in console, note this will slow down the GoZ transfer if enabled!",
-        default=False) # Default:False       
+        default=False) # Default:False    
+
     debug_output: BoolProperty(
         name="Debug: Output",
         description="Show debug output in console, note this will slow down the GoZ transfer if enabled!",
@@ -370,6 +394,10 @@ class GoB_Preferences(AddonPreferences):
         col.prop(self, 'clean_project_path')    
         col.prop(self, 'flip_up_axis')
         col.prop(self, 'flip_forward_axis')   
+
+        #col.prop(self, 'axis_up') 
+        #col.prop(self, 'axis_forward') 
+
         col.prop(self, 'use_scale')
         if self.use_scale == 'MANUAL':                   
             col.prop(self, 'manual_scale')
@@ -385,12 +413,14 @@ class GoB_Preferences(AddonPreferences):
         #box = layout.box() 
         box.label(text='GoB Import Options', icon='IMPORT')
         col = box.column(align=False)
+        col.prop(self, 'import_keep_transfomration')
         #box.prop(self, 'import_method')         #TODO: disabled: some bugs when switching import method
         col.prop(self, 'import_timer')
         col.prop(self, 'import_material')
         col.prop(self, 'import_mask')
         uv_row = col.row()
         uv_row.prop(self, 'import_uv')
+        
         if self.import_uv:
             uv_row.prop(self, 'import_uv_name', text='') 
 
