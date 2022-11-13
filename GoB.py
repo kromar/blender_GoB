@@ -1682,14 +1682,14 @@ def apply_transformation(me, is_import=True):
     # IMPORT    
     if is_import: 
         if prefs().flip_up_axis:
+            axis_forward = 'Z'      
+        else:
+            axis_forward = '-Z'
+
+        if prefs().flip_forward_axis:  
             axis_up = '-Y'
         else:
             axis_up = 'Y'
-
-        if prefs().flip_forward_axis:
-            axis_forward = 'Z'      
-        else:
-            axis_forward = '-Z'  
 
         global_matrix = axis_conversion(to_forward = axis_forward,
                                         to_up = axis_up,
