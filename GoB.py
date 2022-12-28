@@ -43,30 +43,29 @@ def prefs():
 
 def gob_init_os_paths():   
     isMacOS = False
-    useZSH = False
+    #useZSH = False
     import platform
     if platform.system() == 'Windows':  
-        print("GoB Found System: ", platform.system())
         isMacOS = False
         PATH_GOZ = os.path.join(os.environ['PUBLIC'] , "Pixologic")
 
     elif platform.system() == 'Darwin': #osx
-        print("GoB Found System: ", platform.system())
-
         # with macOS Catalina (10.15) apple switched from bash to zsh as default shell
+        """
         if platform.mac_ver()[0] < str(10.15):
             print("use bash")
             useZSH = False
         else: 
             print("use zsh")
             useZSH = True
-
+        """
         isMacOS = True        
         #print(os.path.isfile("/Users/Shared/Pixologic/GoZBrush/GoZBrushFromApp.app/Contents/MacOS/GoZBrushFromApp"))
         PATH_GOZ = os.path.join("/Users/Shared/Pixologic")
     else:
-        print("GoB Unkonwn System: ", platform.system())
         PATH_GOZ = False ## NOTE: GOZ seems to be missing, reinstall from zbrush
+       
+    #print("GoB System: ", platform.system())
     
     PATH_GOB =  os.path.abspath(os.path.dirname(__file__))
     PATH_BLENDER = os.path.join(bpy.app.binary_path)
