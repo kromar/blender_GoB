@@ -721,7 +721,7 @@ class GoB_OT_import(Operator):
             return{'FINISHED'}
 
         if self.action == 'AUTO':    
-            if prefs().import_method == 'AUTOMATIC':
+            if prefs().import_button_method == 'AUTOMATIC':
                 global run_background_update
                 if run_background_update:
                     if bpy.app.timers.is_registered(run_import_periodically):

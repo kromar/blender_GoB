@@ -283,11 +283,11 @@ class GoB_Preferences(AddonPreferences):
                     ],
             default='TEXTURES') # Default: POLYPAINT    
 
-    import_method: EnumProperty(
+    import_button_method: EnumProperty(
             name="Import Button Method",
             description="Manual Mode requires to press the import every time you send a model from zbrush to import it.",
             items=[('MANUAL', 'Manual', 'Manual Mode requires to press the import every time you send a model from zbrush to import it.'),
-                   ('AUTOMATIC', 'Automatic', 'Automatic Mode'),
+                   ('AUTOMATIC', 'Automatic', 'Automatic Mode will import when modification is detected on the drive. (The update interval will define how often to chekc for file changes)'),
                    ],
             default='AUTOMATIC') # Default: AUTOMATIC    
             
@@ -437,10 +437,9 @@ class GoB_Preferences(AddonPreferences):
         
         col.prop(self, 'import_axis_forward') 
         col.prop(self, 'import_axis_up') 
-        col.prop(self, 'import_keep_transfomration')
-        
+        col.prop(self, 'import_keep_transfomration')        
 
-        box.prop(self, 'import_method')
+        box.prop(self, 'import_button_method')
         col.prop(self, 'import_timer')
         col.prop(self, 'import_material')
         col.prop(self, 'import_mask')
