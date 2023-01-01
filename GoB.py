@@ -742,11 +742,9 @@ class GoB_OT_import(Operator):
                         if prefs().debug_output:
                             print('Enabling GOZ background listener')
                     run_background_update = True
-            elif run_background_update:
-                if bpy.app.timers.is_registered(run_import_periodically):
-                    bpy.app.timers.unregister(run_import_periodically)
-                    print('Disabling GOZ background listener')
-                run_background_update = False
+            else:                
+                run_import_manually()
+                return{'FINISHED'}
             return{'FINISHED'}
 
 

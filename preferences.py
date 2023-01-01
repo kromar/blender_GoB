@@ -440,7 +440,7 @@ class GoB_Preferences(AddonPreferences):
         col.prop(self, 'import_keep_transfomration')
         
 
-        #box.prop(self, 'import_method')         #TODO: disabled: some bugs when switching import method
+        box.prop(self, 'import_method')
         col.prop(self, 'import_timer')
         col.prop(self, 'import_material')
         col.prop(self, 'import_mask')
