@@ -1674,23 +1674,18 @@ def apply_transformation(me, is_import=True):
                 print("unit scale 2: ", obj.dimensions, i, max, scale, obj.dimensions * scale)
        
     # IMPORT    
-    if is_import:         
-        print("\nimport axis_forward: ", prefs().import_axis_forward, "\naxis_up: ", prefs().import_axis_up)  
+    if is_import:           
         global_matrix = axis_conversion(to_forward = prefs().import_axis_forward,
                                         to_up = prefs().import_axis_up,
                                         ).to_4x4() 
         me.transform(global_matrix * scale)
 
     # EXPORT
-    else:            
-        print("\nexport axis_forward: ", prefs().export_axis_forward, "\naxis_up: ", prefs().export_axis_up)  
+    else:             
         global_matrix = axis_conversion(to_forward = prefs().export_axis_forward,
                                         to_up = prefs().export_axis_up,
                                         ).to_4x4() 
         mat_transform = global_matrix * (1/scale)
-
-        
-    print("global_matrix: ", global_matrix)
 
     return me, mat_transform
 
