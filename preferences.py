@@ -138,34 +138,60 @@ class GoB_Preferences(AddonPreferences):
         step=0.01,
         precision=2,
         subtype='FACTOR') 
-    flip_up_axis: BoolProperty(
-        name="Flip up axis",
-        description="Flip the up axis on Import/Export",
-        default=False) # Default: False 
-    flip_forward_axis: BoolProperty(
-        name="Flip forward axis",
-        description="Flip the forward axis on Import/Export",
-        default=False) # Default: False 
     show_button_text: BoolProperty(
         name="Show Buttons Text",
         description="Show Text on the Import/Export Buttons",
         default=False) # Default: True    
 
-    axis_up: EnumProperty(
+    import_axis_up: EnumProperty(
             name="Up Axis",
-            description="Up Axis",
-            items=[('Z', 'Z', ''),
-                   ('-Z', '-Z', ''),
+            description="Import Up Axis",
+            items=[('X', 'X Up', ''),
+                    ('Y', 'Y Up', ''),
+                    ('Z', 'Z Up', ''),
+                    ('-X', '-X Up', ''),
+                    ('-Y', '-Y Up', ''),
+                   ('-Z', '-Z Up', ''),
+                   ],
+            default='Y')   # Default: Y
+
+    import_axis_forward: EnumProperty(
+            name="Forward Axis",
+            description="Import Forward Axis",
+            items=[('X', 'X Forward', ''),
+                    ('Y', 'Y Forward', ''),
+                    ('Z', 'Z Forward', ''),
+                    ('-X', '-X Forward', ''),
+                    ('-Y', '-Y Forward', ''),
+                   ('-Z', '-Z Forward', ''),
+                   ],
+            default='-Z')   # Default: -Z
+
+    export_axis_up: EnumProperty(
+            name="Up Axis",
+            description="Export Up Axis",
+            items=[('X', 'X Up', ''),
+                    ('Y', 'Y Up', ''),
+                    ('Z', 'Z Up', ''),
+                    ('-X', '-X Up', ''),
+                    ('-Y', '-Y Up', ''),
+                   ('-Z', '-Z Up', ''),
+                   ],
+            default='-Y')   # Default: -Y
+
+    export_axis_forward: EnumProperty(
+            name="Forward Axis",
+            description="Export Forward Axis",
+            items=[('X', 'X Forward', ''),
+                    ('Y', 'Y Forward', ''),
+                    ('Z', 'Z Forward', ''),
+                    ('-X', '-X Forward', ''),
+                    ('-Y', '-Y Forward', ''),
+                   ('-Z', '-Z Forward', ''),
                    ],
             default='Z')   # Default: Z
 
-    axis_forward: EnumProperty(
-            name="Forward Axis",
-            description="Forward Axis",
-            items=[('Y', 'Y', ''),
-                   ('-Y', '-Y', ''),
-                   ],
-            default='Y')   # Default: Y 
+
 
     """      
     texture_format: EnumProperty(
@@ -255,7 +281,7 @@ class GoB_Preferences(AddonPreferences):
                     ('POLYGROUPS', 'from Polygroups', 'Create Materials from Polygroups'),
                     ('NONE', 'None', 'No additional material inputs are created'),
                     ],
-            default='POLYPAINT') # Default: POLYPAINT    
+            default='TEXTURES') # Default: POLYPAINT    
 
     import_method: EnumProperty(
             name="Import Button Method",
@@ -391,12 +417,7 @@ class GoB_Preferences(AddonPreferences):
         if self.custom_pixologoc_path:
             col.prop(self, 'pixologoc_path')
 
-        col.prop(self, 'clean_project_path')    
-        col.prop(self, 'flip_up_axis')
-        col.prop(self, 'flip_forward_axis')   
-
-        #col.prop(self, 'axis_up') 
-        #col.prop(self, 'axis_forward') 
+        col.prop(self, 'clean_project_path')  
 
         col.prop(self, 'use_scale')
         if self.use_scale == 'MANUAL':                   
@@ -413,13 +434,19 @@ class GoB_Preferences(AddonPreferences):
         #box = layout.box() 
         box.label(text='GoB Import Options', icon='IMPORT')
         col = box.column(align=False)
+        
+        col.prop(self, 'import_axis_forward') 
+        col.prop(self, 'import_axis_up') 
         col.prop(self, 'import_keep_transfomration')
+        
+
         #box.prop(self, 'import_method')         #TODO: disabled: some bugs when switching import method
         col.prop(self, 'import_timer')
         col.prop(self, 'import_material')
         col.prop(self, 'import_mask')
         uv_row = col.row()
         uv_row.prop(self, 'import_uv')
+        
         
         if self.import_uv:
             uv_row.prop(self, 'import_uv_name', text='') 
@@ -453,11 +480,15 @@ class GoB_Preferences(AddonPreferences):
         box.use_property_split = True
         box.label(text='GoB Export Options', icon='EXPORT')   
         col = box.column(align=False) 
+        
+        col.prop(self, 'export_axis_forward') 
+        col.prop(self, 'export_axis_up') 
+
         col.prop(self, 'export_modifiers')
         col.prop(self, 'export_polygroups')    
         if self.export_polygroups == 'VERTEX_GROUPS':  
             col.prop(self, 'export_weight_threshold')
-        col.prop(self, 'export_clear_mask') 
+        col.prop(self, 'export_clear_mask')         
         
         col.prop(self, 'export_merge') 
         if self.export_merge:

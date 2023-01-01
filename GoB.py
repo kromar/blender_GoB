@@ -32,6 +32,7 @@ import numpy
 from bpy.types import Operator
 from bpy.props import EnumProperty
 from bpy.app.translations import pgettext_iface as iface_
+from bpy_extras.io_utils import axis_conversion
 
 gob_version = str([addon.bl_info.get('version', (-1,-1,-1)) for addon in addon_utils.modules() if addon.bl_info['name'] == 'GoB'][0])
 
@@ -1671,44 +1672,20 @@ def apply_transformation(me, is_import=True):
             scale =  1 / prefs().zbrush_scale * max
             if prefs().debug_output:
                 print("unit scale 2: ", obj.dimensions, i, max, scale, obj.dimensions * scale)
-    
-    
-    
-    from bpy_extras.io_utils import (
-            axis_conversion,
-        )
-    
+       
     # IMPORT    
-    if is_import: 
-        if prefs().flip_up_axis:
-            axis_forward = 'Z'      
-        else:
-            axis_forward = '-Z'
-
-        if prefs().flip_forward_axis:  
-            axis_up = '-Y'
-        else:
-            axis_up = 'Y'
-
-        global_matrix = axis_conversion(to_forward = axis_forward,
-                                        to_up = axis_up,
+    if is_import:         
+        print("\nimport axis_forward: ", prefs().import_axis_forward, "\naxis_up: ", prefs().import_axis_up)  
+        global_matrix = axis_conversion(to_forward = prefs().import_axis_forward,
+                                        to_up = prefs().import_axis_up,
                                         ).to_4x4() 
         me.transform(global_matrix * scale)
 
     # EXPORT
-    else:
-        if prefs().flip_up_axis:
-            axis_up = 'Y'
-        else:
-            axis_up = '-Y'
-
-        if prefs().flip_forward_axis:
-            axis_forward = '-Z'      
-        else:
-            axis_forward = 'Z' 
-            
-        global_matrix = axis_conversion(to_forward = axis_forward,
-                                        to_up = axis_up,
+    else:            
+        print("\nexport axis_forward: ", prefs().export_axis_forward, "\naxis_up: ", prefs().export_axis_up)  
+        global_matrix = axis_conversion(to_forward = prefs().export_axis_forward,
+                                        to_up = prefs().export_axis_up,
                                         ).to_4x4() 
         mat_transform = global_matrix * (1/scale)
 
