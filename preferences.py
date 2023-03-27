@@ -259,7 +259,12 @@ class GoB_Preferences(AddonPreferences):
         soft_max=0.01,
         step=0.0001,
         precision=4,
-        subtype='DISTANCE') 
+        subtype='DISTANCE')         
+        
+    export_global_transform: BoolProperty(
+        name="export_global_transform",
+        description="export_global_transform",
+        default=True) # Default: True
 
 
     # IMPORT
@@ -328,6 +333,11 @@ class GoB_Preferences(AddonPreferences):
         name="UV Map", 
         description="Set name for the UV Map", 
         default="UVMap") # Default: UVMap
+        
+    import_global_transform: BoolProperty(
+        name="import_global_transform",
+        description="import_global_transform",
+        default=False) # Default: False
 
     import_diffuse_suffix: StringProperty(
         name="Base Color", 
@@ -381,13 +391,7 @@ class GoB_Preferences(AddonPreferences):
                 ('XYZ', 'XYZ ', 'XYZ'),
                 ],
         default='Non-Color') # Default: Non-Color 
-        
-    import_keep_transfomration: BoolProperty(
-        name="Keep Object Transformation",
-        description="Keep Transformations when importing a Object",
-        default=True) # Default: False     
-    
-    
+            
     # DEBUG
     debug_dry_export: BoolProperty(
         name="Debug: Dry Export",
@@ -427,6 +431,16 @@ class GoB_Preferences(AddonPreferences):
         col.prop(self, 'show_button_text')  
         #col.prop(self, 'texture_format')
         
+        col.label(text='Import Transform', icon='IMPORT') 
+        col.prop(self, 'import_axis_forward') 
+        col.prop(self, 'import_axis_up') 
+        col.prop(self, 'import_global_transform')   
+        
+        col.label(text='Export Transform', icon='EXPORT') 
+        col.prop(self, 'export_axis_forward') 
+        col.prop(self, 'export_axis_up') 
+        col.prop(self, 'export_global_transform')  
+        
 
     def draw_import(self, box):
         # GoB Import Options
@@ -437,7 +451,7 @@ class GoB_Preferences(AddonPreferences):
         
         col.prop(self, 'import_axis_forward') 
         col.prop(self, 'import_axis_up') 
-        col.prop(self, 'import_keep_transfomration')        
+        col.prop(self, 'import_global_transform')               
 
         box.prop(self, 'import_button_method')
         col.prop(self, 'import_timer')
@@ -482,6 +496,7 @@ class GoB_Preferences(AddonPreferences):
         
         col.prop(self, 'export_axis_forward') 
         col.prop(self, 'export_axis_up') 
+        col.prop(self, 'export_global_transform')   
 
         col.prop(self, 'export_modifiers')
         col.prop(self, 'export_polygroups')    

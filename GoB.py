@@ -99,6 +99,7 @@ def draw_goz_buttons(self, context):
                 row.operator(operator="scene.gob_import", text=iface_("Import", None), emboss=True, depress=True, icon_value=icons["GOZ_SYNC_ENABLED"].icon_id).action = 'AUTO'
             else:
                 row.operator(operator="scene.gob_import", text=iface_("Import", None), emboss=True, depress=False, icon_value=icons["GOZ_SYNC_DISABLED"].icon_id).action = 'AUTO'
+            
             row.operator(operator="scene.gob_import", text="Manual", emboss=True, depress=False, icon='IMPORT').action = 'MANUAL'
         else:
             row.operator(operator="scene.gob_export_button", text="", emboss=True, icon_value=icons["GOZ_SEND"].icon_id)
@@ -106,6 +107,7 @@ def draw_goz_buttons(self, context):
                 row.operator(operator="scene.gob_import", text="", emboss=True, depress=True, icon_value=icons["GOZ_SYNC_ENABLED"].icon_id).action = 'AUTO'
             else:
                 row.operator(operator="scene.gob_import", text="", emboss=True, depress=False, icon_value=icons["GOZ_SYNC_DISABLED"].icon_id).action = 'AUTO'
+            
             row.operator(operator="scene.gob_import", text="", emboss=True, depress=False, icon='IMPORT').action = 'MANUAL'
 
 
@@ -254,13 +256,16 @@ class GoB_OT_import(Operator):
                     bm.from_mesh(me)
                     bm.faces.ensure_lookup_table() 
                     #update vertex positions
+                    print("\nGoB vertsData: ", vertsData)
+                    
+                    location = obj.matrix_world.translation
+                    print("LCATION: ", location)
+                    
                     for i, v in enumerate(bm.verts):
-                        if prefs().import_keep_transfomration:    
-                            v.co  = obj.matrix_world @ mathutils.Vector(vertsData[i])
-                            print("t1: ", mathutils.Vector(vertsData[i]), v.co)
+                        if prefs().import_global_transform:    
+                            v.co = (mathutils.Vector(vertsData[i]) @ obj.matrix_world)    # global coordinates                         
                         else:
-                            v.co  = mathutils.Vector(vertsData[i])  
-                            print("t2: ", v.co)
+                            v.co  = (mathutils.Vector(vertsData[i]) + mathutils.Vector(location))
                     bm.to_mesh(me)   
                     bm.free()
                     #bmesh.update_edit_mesh(mesh, loop_triangles=True, destructive=True) #https://docs.blender.org/api/current/bmesh.html#bmesh.update_edit_mesh
@@ -877,8 +882,12 @@ class GoB_OT_export(Operator):
             goz_file.write(pack('<I', numVertices*3*4+16))
             goz_file.write(pack('<Q', numVertices))            
             for vert in me.vertices:
-                modif_coo = obj.matrix_world @ vert.co      # @ is used for matrix multiplications
-                modif_coo = mat_transform @ modif_coo
+                if prefs().export_global_transform:
+                    modif_coo = obj.matrix_world @ vert.co      # @ is used for matrix multiplications
+                    modif_coo = mat_transform @ modif_coo
+                else:
+                    modif_coo = mat_transform @ vert.co 
+
                 goz_file.write(pack('<3f', modif_coo[0], modif_coo[1], modif_coo[2]))                
             if prefs().performance_profiling: 
                 start_time = profiler(start_time, "Write Vertices")            
@@ -1660,17 +1669,15 @@ def apply_transformation(me, is_import=True):
     if prefs().use_scale == 'BUNITS':
         scale = 1 / bpy.context.scene.unit_settings.scale_length
 
-    if prefs().use_scale == 'MANUAL':        
+    elif prefs().use_scale == 'MANUAL':        
         scale =  1 / prefs().manual_scale
 
-    if prefs().use_scale == 'ZUNITS':
+    elif prefs().use_scale == 'ZUNITS':
         if bpy.context.active_object:
             obj = bpy.context.active_object
             i, max = max_list_value(obj.dimensions)
             scale =  1 / prefs().zbrush_scale * max
-            if prefs().debug_output:
-                print("unit scale 2: ", obj.dimensions, i, max, scale, obj.dimensions * scale)
-       
+    
     # IMPORT    
     if is_import:           
         global_matrix = axis_conversion(to_forward = prefs().import_axis_forward,
@@ -1684,6 +1691,13 @@ def apply_transformation(me, is_import=True):
                                         to_up = prefs().export_axis_up,
                                         ).to_4x4() 
         mat_transform = global_matrix * (1/scale)
+
+        
+    if not prefs().debug_output:
+        print("\nGoB unit scale: ", prefs().use_scale)
+        print("GoB scale: ", scale)
+        print("GoB global_matrix: ", global_matrix)
+        print("GoB mat_transform: ", mat_transform)
 
     return me, mat_transform
 
