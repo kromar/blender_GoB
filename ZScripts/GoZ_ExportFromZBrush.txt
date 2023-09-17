@@ -1,0 +1,59 @@
+//RECORDED ZSCRIPT 2022
+[IButton,GoZ,"Press to play this ZScript. ZScript can be aborted at anytime by pressing the ëescí key.",
+[IConfig,2022]
+[IPress,Tool: GoZ Current      Temporary button]
+[IFreeze,
+]
+
+
+[VarSet,publicPath,[FileNameExtract,[FileNameResolvePath,"ZPUBLIC_ZPluginData/"],1]]
+[RoutineCall,AdjustPath,publicPath]         //just as Notes don't display backslashes!
+//[Note,[StrMerge, "\nThe ZBrush Data folder path is: \n    ", publicPath],,reportDuration]
+[VarDef,GoZProjectsPath,""]
+[VarDef, GoZBrushPath, ""]
+[VarSet,subtoolName,[IGetTitle, "Tool:ItemInfo"]]        //get the subtool name
+[If,[ZBrushInfo,6],//is MacOS
+    [If,[StrFind,"Shared",publicPath]>-1,
+        [VarSet,GoZProjectsPath,[StrExtract,publicPath,0,([StrFind,"Shared",publicPath]+6)]]
+        [VarSet,GoZProjectsPath,[StrMerge,GoZProjectsPath,"Pixologic/GoZProjects/Default/"]]
+
+        [VarSet,GoZBrushPath,[StrExtract,publicPath,0,([StrFind,"Shared",publicPath]+6)]]
+        [VarSet,GoZBrushPath,[StrMerge,GoZBrushPath,"Pixologic/GoZBrush/"]]
+
+        //[Note,[StrMerge, "\nThe GoZ Projects path is: \n    ", GoZProjectsPath],,reportDuration]
+        //[Note,[StrMerge, "\nThe GoZ objects list path is: \n    ", GoZBrushPath],,reportDuration]
+        ]	 	
+    //note that ZBrush paths on MacOS start with "!:"
+    //this needs to be removed if passing paths to dynamic libraries etc. - see GetFullPath routine above
+    
+        ,//else Windows
+        [If,[StrFind,"Documents",publicPath]>-1,
+        [VarSet,GoZProjectsPath,[StrExtract,publicPath,0,([StrFind,"Documents",publicPath]-1)]]
+        [VarSet,GoZProjectsPath,[StrMerge,GoZProjectsPath,"Pixologic/GoZProjects/Default/"]]
+        [RoutineCall,AdjustPath,GoZProjectsPath]//just as Notes don't display backslashes!
+
+        [VarSet,GoZBrushPath,[StrExtract,publicPath,0,([StrFind,"Documents",publicPath]-1)]]
+        [VarSet,GoZBrushPath,[StrMerge,GoZBrushPath,"Pixologic/GoZBrush/"]]
+        [RoutineCall,AdjustPath,GoZBrushPath]//just as Notes don't display backslashes!
+
+        //[Note,[StrMerge, "\nThe GoZ Projects path is: \n    ", GoZProjectsPath],,reportDuration]
+        //[Note,[StrMerge, "\nThe GoZ objects list path is: \n    ", GoZBrushPath],,reportDuration]
+        ]
+]
+
+[IShowActions,0]
+[IFreeze,
+    [IPress,Preferences:ImportExport:iFlipY]
+    [IPress,Preferences:ImportExport:iFlipZ]
+    [IPress,Preferences:ImportExport:eFlipY]
+    [IPress,Preferences:ImportExport:eFlipZ]
+    [IPress,Preferences:ImportExport:Import PolyGroups]
+    [IPress,Preferences:ImportExport:NormalMapFlipVert]
+    [IPress,Preferences:ImportExport:iMFlipY]
+    [IPress,Preferences:ImportExport:eMFlipY]
+]
+
+[FileNameSetNext,subtoolName][IPress,Tool:Save As]
+
+[IShowActions,1]
+]/*End of ZScript*/
