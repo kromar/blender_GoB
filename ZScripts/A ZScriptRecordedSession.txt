@@ -1,0 +1,7 @@
+//RECORDED ZSCRIPT 2022
+[VarDef,GoBExport,1]  
+
+[If,GoBExport==1, 
+    [FileNameSetNext,"C:\Users\Public\Pixologic\GoZProjects\Default\PM3D_Cylinder3D_1.fbx"][IPress,Tool:Export]
+    [IPress,Tool:Export]
+]/*End of ZScript*/
