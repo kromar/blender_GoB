@@ -148,7 +148,8 @@ class GoB_Preferences(AddonPreferences):
     export_polygroups: EnumProperty( 
         name="Polygroups",
         description="Create Polygroups",
-        items=[ #('FACE_MAPS', 'from Face Maps', 'Create Polygroups from Face Maps'), 
+        items=[ ('FACE_SETS', 'from Face Sets', 'Create Polygroups from Face Sets'),
+                #('FACE_MAPS', 'from Face Maps', 'Create Polygroups from Face Maps'), 
                 ('MATERIALS', 'from Materials', 'Create Polygroups from Materials'),
                 ('VERTEX_GROUPS', 'from Vertex Groups', 'Create Polygroups from Vertex Groups'),
                 ('NONE', 'None', 'Do not Create Polygroups'),
@@ -246,6 +247,10 @@ class GoB_Preferences(AddonPreferences):
     import_polygroups_to_facemaps: BoolProperty(
         name="Polygroups to Face Maps",
         description="Import Polygroups as Face Maps",
+        default=True) # Default: True
+    import_polygroups_to_facesets: BoolProperty(
+        name="Polygroups to Face Sets",
+        description="Import Polygroups as Face Sets",
         default=True) # Default: True
     apply_facemaps_to_facesets: BoolProperty(
         name="Apply Face Maps to Face Sets",
@@ -425,6 +430,7 @@ class GoB_Preferences(AddonPreferences):
         pg_col.prop(self, 'import_polygroups_to_vertexgroups')
         #pg_col.prop(self, 'import_polygroups_to_facemaps')
         #pg_col.prop(self, 'apply_facemaps_to_facesets')
+        pg_col.prop(self, 'import_polygroups_to_facesets')
 
         if self.import_material == 'TEXTURES':
             row = box.row(align=True)  
