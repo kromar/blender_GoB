@@ -438,16 +438,6 @@ class GoB_OT_import(Operator):
                             if utils.prefs().performance_profiling: 
                                 start_time = utils.profiler(start_time, "____import_polygroups_to_vertexgroups")
                             
-                        # import polygroups to face maps
-                        """ if utils.prefs().import_polygroups_to_facemaps:                                
-                            #wipe face maps before importing new ones due to random naming           
-                            [obj.face_maps.remove(facemap) for facemap in obj.face_maps]
-                            for group in set(polyGroupData):
-                                obj.face_maps.new(name=str(group)) 
-                            
-                            if utils.prefs().performance_profiling: 
-                                start_time = utils.profiler(start_time, "____import_polygroups_to_facemaps") """
-                       
                        # import polygroups to face sets
                         if utils.prefs().import_polygroups_to_facesets:
                             # create .sculpt_face_set attribute if not present
@@ -464,9 +454,6 @@ class GoB_OT_import(Operator):
                                 slot = obj.material_slots[bpy.data.materials[str(pgmat)].name].slot_index
                                 obj.data.polygons[i].material_index = slot     
                             
-                            # add faces to facemap
-                            """ if utils.prefs().import_polygroups_to_facemaps:
-                                obj.face_maps.get(str(pgmat)).add([i]) """
                             
                             # store polygroup index in storage
                             if utils.prefs().import_polygroups_to_facesets:
